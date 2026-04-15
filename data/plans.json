@@ -1,0 +1,72 @@
+[
+  {
+    "plan_id": "starter",
+    "name": "Starter",
+    "price_display": "Starting at INR 9,999",
+    "price_amount": 9999,
+    "description": "Perfect for individual practitioners with a single business type",
+    "business_types_limit": 1,
+    "features": [
+      "Single business type website",
+      "5 core compliance pages",
+      "Full regulatory compliance",
+      "Standard design template",
+      "SSL certificate included",
+      "Mobile responsive design",
+      "Basic SEO optimization",
+      "Email support",
+      "7 working days delivery"
+    ],
+    "delivery_days": 7,
+    "support_type": "Email",
+    "is_contact_us": false,
+    "is_popular": false,
+    "sort_order": 1
+  },
+  {
+    "plan_id": "professional",
+    "name": "Professional",
+    "price_display": "Starting at INR 24,999",
+    "price_amount": 24999,
+    "description": "Ideal for multi-service firms needing comprehensive compliance",
+    "business_types_limit": 3,
+    "features": [
+      "Up to 3 business types",
+      "8+ pages with blog & calculators",
+      "Full compliance + combination rules",
+      "Custom design with brand colors",
+      "SSL certificate included",
+      "Advanced SEO optimization",
+      "Priority email + call support",
+      "5 working days delivery"
+    ],
+    "delivery_days": 5,
+    "support_type": "Priority",
+    "is_contact_us": false,
+    "is_popular": true,
+    "sort_order": 2
+  },
+  {
+    "plan_id": "enterprise",
+    "name": "Enterprise",
+    "price_display": "Custom Quote",
+    "price_amount": 0,
+    "description": "For large firms & institutions needing bespoke solutions",
+    "business_types_limit": -1,
+    "features": [
+      "Unlimited business type combinations",
+      "Unlimited pages",
+      "Full compliance + ongoing monitoring",
+      "Fully bespoke design",
+      "White-label option available",
+      "API access",
+      "Dedicated account manager",
+      "3 working days delivery"
+    ],
+    "delivery_days": 3,
+    "support_type": "Dedicated",
+    "is_contact_us": true,
+    "is_popular": false,
+    "sort_order": 3
+  }
+]

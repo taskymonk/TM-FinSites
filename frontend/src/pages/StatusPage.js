@@ -10,7 +10,7 @@ import { CheckCircle2, Clock, Search, ArrowRight } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || '';
 
 const STATUS_STEPS = ["submitted", "under_review", "payment_pending", "payment_received", "in_production", "delivered", "live"];
 const STATUS_LABELS = { submitted: "Submitted", under_review: "Under Review", payment_pending: "Payment Pending", payment_received: "Payment Received", in_production: "In Production", delivered: "Delivered", live: "Live", rejected: "Rejected", abandoned: "Abandoned" };

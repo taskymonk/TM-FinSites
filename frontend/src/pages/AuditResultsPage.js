@@ -9,7 +9,7 @@ import { CheckCircle2, XCircle, AlertTriangle, ArrowRight, Shield, Globe, Loader
 import axios from "axios";
 import { toast } from "sonner";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || '';
 const ALL_TYPES = ["MFD", "Insurance", "PMS", "AIF", "SIF", "RIA"];
 
 function ScoreRing({ score, label, size = 100 }) {

@@ -9,7 +9,7 @@ import { CheckCircle2, Copy, ExternalLink, Clock, CreditCard, Hammer, Eye, Rocke
 import axios from "axios";
 import { toast } from "sonner";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || '';
 
 const STEPS_INFO = [
   { icon: Eye, label: "Review", desc: "Our team reviews your submission for completeness", time: "24-48 hours" },

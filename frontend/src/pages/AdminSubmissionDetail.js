@@ -13,7 +13,7 @@ import { ArrowLeft, Shield, Clock, Loader2, Send, CheckCircle2 } from "lucide-re
 import axios from "axios";
 import { toast } from "sonner";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || '';
 const STATUS_LABELS = { submitted: "Submitted", under_review: "Under Review", payment_pending: "Payment Pending", payment_received: "Payment Received", in_production: "In Production", delivered: "Delivered", live: "Live", rejected: "Rejected", abandoned: "Abandoned" };
 const ALL_STATUSES = Object.keys(STATUS_LABELS);
 const STATUS_COLORS = { submitted: "bg-blue-500", under_review: "bg-yellow-500", payment_pending: "bg-orange-500", payment_received: "bg-green-500", in_production: "bg-purple-500", delivered: "bg-cyan-500", live: "bg-emerald-500", rejected: "bg-red-500", abandoned: "bg-gray-500" };

@@ -12,7 +12,7 @@ import { CheckCircle2, ChevronRight, Loader2, Send, Phone, Mail, User } from "lu
 import axios from "axios";
 import { toast } from "sonner";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || '';
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 
 export default function PlanSelectionPage() {

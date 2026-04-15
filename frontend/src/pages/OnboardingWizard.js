@@ -12,7 +12,7 @@ import Step5Review from "@/components/wizard/Step5Review";
 import axios from "axios";
 import { toast } from "sonner";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || '';
 const STEPS = ["Business Type", "Registration Details", "Services & Content", "Design Preferences", "Review & Submit"];
 
 export default function OnboardingWizard() {

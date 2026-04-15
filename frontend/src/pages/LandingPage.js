@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Shield, BarChart3, Scan, Layers, Users, Zap, ArrowRight, CheckCircle2, ChevronRight, TrendingUp, FileCheck, Palette, Globe } from "lucide-react";
 import axios from "axios";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || '';
 const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } };
 const stagger = { visible: { transition: { staggerChildren: 0.1 } } };
 

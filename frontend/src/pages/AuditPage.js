@@ -9,7 +9,7 @@ import { Scan, Globe, ArrowRight, Loader2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || '';
 
 export default function AuditPage() {
   const [url, setUrl] = useState("");
