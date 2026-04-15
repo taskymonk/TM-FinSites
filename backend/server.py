@@ -283,18 +283,23 @@ def extract_contact_info(soup, text):
 def extract_officers(clean_text):
     """Extract principal officer and compliance officer details."""
     officers = {}
-    text_lower = clean_text.lower()
-    for role in ["principal officer", "compliance officer", "grievance officer"]:
-        idx = text_lower.find(role)
+    for role_label, role_key in [("principal officer", "principal_officer"), ("compliance officer", "compliance_officer"), ("grievance officer", "grievance_officer")]:
+        idx = clean_text.lower().find(role_label)
         if idx != -1:
-            snippet = clean_text[idx:idx + 200]
-            name_match = re.search(r'(?:principal|compliance|grievance)\s+officer\s*[:\-–]?\s*([A-Z][a-zA-Z]+(?: [A-Z][a-zA-Z]+){0,4})', snippet)
-            if name_match:
-                name = name_match.group(1).strip()
-                # Remove trailing partial titles
-                name = re.sub(r'\s+(?:Co|Fo|Pr|Di|Ma|Ch|Se)\s*$', '', name).strip()
-                if len(name) > 2:
-                    officers[role.replace(" ", "_")] = name
+            after = clean_text[idx + len(role_label):idx + len(role_label) + 100].strip()
+            after = re.sub(r'^[:\-–\s]+', '', after)
+            # Capture consecutive capitalized words as the name (stop at hyphen, number, or other pattern)
+            words = []
+            for word in after.split():
+                if word[0].isupper() and word.isalpha() and len(word) > 1:
+                    words.append(word)
+                else:
+                    break
+                if len(words) >= 4:
+                    break
+            name = " ".join(words)
+            if len(name) > 3:
+                officers[role_key] = name
     return officers
 
 def extract_services(text_lower):
