@@ -32,6 +32,11 @@ STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
 APP_NAME = "finsites"
 storage_key = None
 
+# Cross-domain cookie config (for Vercel frontend + Render backend)
+IS_PRODUCTION = os.environ.get("RENDER", "") == "true" or os.environ.get("PRODUCTION", "") == "true"
+COOKIE_SECURE = IS_PRODUCTION
+COOKIE_SAMESITE = "none" if IS_PRODUCTION else "lax"
+
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
@@ -499,8 +504,8 @@ async def login(req: LoginRequest, response: Response):
     user_id = str(user["_id"])
     access_token = create_access_token(user_id, email)
     refresh_token = create_refresh_token(user_id)
-    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=86400, path="/")
-    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE, max_age=86400, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE, max_age=604800, path="/")
     await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}})
     return {"id": user_id, "email": user["email"], "name": user.get("name", ""), "role": user.get("role", "user")}
 
@@ -820,9 +825,13 @@ app.include_router(api_router)
 
 # ========== CORS ==========
 frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+cors_origins = [frontend_url, "http://localhost:3000"]
+extra_origins = os.environ.get("CORS_ORIGINS", "")
+if extra_origins and extra_origins != "*":
+    cors_origins.extend([o.strip() for o in extra_origins.split(",") if o.strip()])
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url, "http://localhost:3000"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

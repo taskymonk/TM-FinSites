@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: finsites-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: DB_NAME
+        value: finsites
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@finsites.in
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: EMERGENT_LLM_KEY
+        sync: false
+      - key: PRODUCTION
+        value: "true"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
