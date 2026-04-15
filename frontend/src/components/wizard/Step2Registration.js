@@ -1,3 +1,4 @@
+import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -5,6 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Upload, CheckCircle2, Loader2, Image } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 const STATES = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Delhi","Chandigarh","Puducherry","Ladakh","J&K","Lakshadweep","A&N Islands","Dadra & Nagar Haveli and Daman & Diu"];
 
@@ -14,8 +21,30 @@ function Field({ label, children, required }) {
 
 export default function Step2Registration({ data, businessTypes, contact, onChange }) {
   const ga = data.group_a || {};
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
   const update = (group, field, value) => {
     onChange({ [group]: { ...data[group], [field]: value } });
+  };
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("File too large. Max 5MB."); return; }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data: result } = await axios.post(`${API}/api/upload/logo`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+      update("group_a", "logo_file_id", result.file_id);
+      update("group_a", "logo_url", `${API}${result.url}`);
+      update("group_a", "logo_filename", result.filename);
+      toast.success("Logo uploaded successfully!");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Upload failed");
+    } finally { setUploading(false); }
   };
 
   return (
@@ -55,13 +84,30 @@ export default function Step2Registration({ data, businessTypes, contact, onChan
               <Field label="LinkedIn"><Input value={ga.linkedin || ""} onChange={e => update("group_a", "linkedin", e.target.value)} placeholder="https://linkedin.com/in/..." data-testid="field-linkedin" /></Field>
               <Field label="Website (if any)"><Input value={ga.website || ""} onChange={e => update("group_a", "website", e.target.value)} placeholder="https://..." data-testid="field-website" /></Field>
               <div className="sm:col-span-2 glass rounded-lg p-4 mt-2">
-                <h4 className="text-sm font-semibold mb-3 font-[var(--font-heading)]">Logo & Branding</h4>
+                <h4 className="text-sm font-semibold mb-3 font-[var(--font-heading)] flex items-center gap-2"><Image className="w-4 h-4 text-[hsl(var(--primary))]" /> Logo & Branding</h4>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="Do you have a logo?">
                     <div className="flex items-center gap-3 h-10"><Switch checked={ga.has_logo || false} onCheckedChange={v => update("group_a", "has_logo", v)} data-testid="field-has-logo" /><span className="text-sm">{ga.has_logo ? "Yes" : "No"}</span></div>
                   </Field>
                   {ga.has_logo && (
-                    <Field label="Logo URL (paste a link to your logo)"><Input value={ga.logo_url || ""} onChange={e => update("group_a", "logo_url", e.target.value)} placeholder="https://drive.google.com/... or any image URL" data-testid="field-logo-url" /></Field>
+                    <div>
+                      <Label className="text-xs mb-1.5 block">Upload Logo (PNG, JPG, SVG — max 5MB)</Label>
+                      <input type="file" ref={fileRef} onChange={handleLogoUpload} accept="image/*" className="hidden" data-testid="logo-file-input" />
+                      {ga.logo_url ? (
+                        <div className="flex items-center gap-3">
+                          <img src={ga.logo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border border-border bg-secondary" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium truncate flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[hsl(var(--accent))]" />{ga.logo_filename || "Logo uploaded"}</p>
+                            <button onClick={() => fileRef.current?.click()} className="text-xs text-[hsl(var(--primary))] hover:underline mt-0.5" data-testid="logo-change-btn">Change</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading} className="gap-2 w-full" data-testid="logo-upload-btn">
+                          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                          {uploading ? "Uploading..." : "Choose Logo File"}
+                        </Button>
+                      )}
+                    </div>
                   )}
                   {ga.has_logo && (
                     <Field label="Brand Primary Color">

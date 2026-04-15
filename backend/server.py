@@ -17,7 +17,8 @@ import jwt
 import httpx
 from bs4 import BeautifulSoup
 
-from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Query, UploadFile, File
+from fastapi.responses import Response as FastResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
@@ -27,6 +28,9 @@ from pydantic import BaseModel, Field
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_EXPIRY = timedelta(hours=24)
 JWT_REFRESH_EXPIRY = timedelta(days=7)
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+APP_NAME = "finsites"
+storage_key = None
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -140,12 +144,31 @@ REGISTRATION_PATTERNS = {
     "SEBI_PMS": r"INP\d{6,}",
     "SEBI_AIF": r"IN/AIF/[\w\-/]+",
     "SEBI_RIA": r"INA[\d/]\w{4,}",
+    "APRN": r"APRN[-\s]?\d{4,}",
 }
 
 BUSINESS_TYPE_MAP = {
     "MFD": {"regs": ["ARN", "EUIN"], "keywords": ["mutual fund", "amfi", "mfd", "sip", "systematic investment", "mutual fund distributor", "arn"]},
     "Insurance": {"regs": ["IRDAI"], "keywords": ["insurance", "irdai", "life insurance", "general insurance", "health insurance", "posp", "policy"]},
-    "PMS": {"regs": ["SEBI_PMS"], "keywords": ["portfolio management", "pms", "discretionary", "non-discretionary"]},
+    "PMS": {"regs": ["SEBI_PMS", "APRN"], "keywords": ["portfolio management", "pms", "discretionary", "non-discretionary", "apmi"]},
+    "AIF": {"regs": ["SEBI_AIF"], "keywords": ["alternative investment", "aif", "category i", "category ii", "category iii", "venture capital"]},
+    "SIF": {"regs": [], "keywords": ["specialised investment fund", "sif", "nism-xxi", "nism series xxi"]},
+    "RIA": {"regs": ["SEBI_RIA"], "keywords": ["investment adviser", "ria", "sebi registered investment", "advisory fee", "ina/"]},
+}
+
+INDIAN_STATES = ["andhra pradesh","arunachal","assam","bihar","chhattisgarh","goa","gujarat","haryana","himachal","jharkhand","karnataka","kerala","madhya pradesh","maharashtra","manipur","meghalaya","mizoram","nagaland","odisha","punjab","rajasthan","sikkim","tamil nadu","telangana","tripura","uttar pradesh","uttarakhand","west bengal","delhi","chandigarh","puducherry","ladakh"]
+
+def clean_soup(soup):
+    """Remove script, style, svg, noscript to get clean text."""
+    s = BeautifulSoup(str(soup), "lxml")
+    for tag in s.find_all(["script", "style", "noscript", "svg", "link"]):
+        tag.decompose()
+    return s
+
+BUSINESS_TYPE_MAP = {
+    "MFD": {"regs": ["ARN", "EUIN"], "keywords": ["mutual fund", "amfi", "mfd", "sip", "systematic investment", "mutual fund distributor", "arn"]},
+    "Insurance": {"regs": ["IRDAI"], "keywords": ["insurance", "irdai", "life insurance", "general insurance", "health insurance", "posp", "policy"]},
+    "PMS": {"regs": ["SEBI_PMS", "APRN"], "keywords": ["portfolio management", "pms", "discretionary", "non-discretionary", "apmi"]},
     "AIF": {"regs": ["SEBI_AIF"], "keywords": ["alternative investment", "aif", "category i", "category ii", "category iii", "venture capital"]},
     "SIF": {"regs": [], "keywords": ["specialised investment fund", "sif", "nism-xxi", "nism series xxi"]},
     "RIA": {"regs": ["SEBI_RIA"], "keywords": ["investment adviser", "ria", "sebi registered investment", "advisory fee", "ina/"]},
@@ -186,8 +209,10 @@ def extract_business_name(soup, url):
         name = og_title["content"].strip()
         if name.lower() not in ("home", "homepage", "index", "welcome"):
             return name.split("|")[0].split("-")[0].strip()
-    # Strategy 3: Footer copyright pattern © 2024 Company Name
-    copyright_match = re.search(r'©\s*\d{4}\s+([^.|,\n]{3,60})', soup.get_text())
+    # Strategy 3: Footer copyright pattern
+    clean = clean_soup(soup)
+    clean_text = clean.get_text(separator=" ", strip=True)
+    copyright_match = re.search(r'©\s*\d{4}\s+([^.|,\n]{3,50})', clean_text)
     if copyright_match:
         name = copyright_match.group(1).strip().rstrip('.')
         if name.lower() not in ("all rights reserved",):
@@ -218,31 +243,76 @@ def extract_business_name(soup, url):
     except:
         return ""
 
+def extract_address(clean_text):
+    """Extract Indian address using structured patterns."""
+    text_lower = clean_text.lower()
+    for label in ["registered office", "office address", "address:", "office:"]:
+        idx = text_lower.find(label)
+        if idx != -1:
+            snippet = clean_text[idx:idx + 300]
+            pin_match = re.search(r'(.{0,150}?\d{6})', snippet)
+            if pin_match:
+                addr = pin_match.group(0)
+                addr = re.sub(r'^(?:registered office|office address|address|office)\s*[:.]?\s*', '', addr, flags=re.IGNORECASE).strip()
+                if len(addr) > 10:
+                    return addr
+    indian_states = ["andhra pradesh","assam","bihar","chhattisgarh","goa","gujarat","haryana","himachal","jharkhand","karnataka","kerala","madhya pradesh","maharashtra","manipur","meghalaya","mizoram","nagaland","odisha","punjab","rajasthan","sikkim","tamil nadu","telangana","tripura","uttar pradesh","uttarakhand","west bengal","delhi","chandigarh","puducherry","ladakh"]
+    for m in re.finditer(r'(.{10,150}?\b(\d{6})\b)', clean_text):
+        snippet = m.group(1)
+        snippet_lower = snippet.lower()
+        if any(state in snippet_lower for state in indian_states):
+            return re.sub(r'^[\s,]+', '', snippet).strip()
+    for m in re.finditer(r'(.{10,150}?\b(\d{6})\b)', clean_text):
+        snippet = m.group(1)
+        snippet_lower = snippet.lower()
+        if any(w in snippet_lower for w in ["road", "street", "market", "nagar", "colony", "sector", "block", "floor", "tower", "building", "plot"]):
+            return snippet.strip()
+    return ""
+
 def extract_contact_info(soup, text):
     info = {"phones": [], "emails": [], "address": ""}
-    email_matches = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', text)
+    clean = clean_soup(soup)
+    clean_text = clean.get_text(separator=" ", strip=True)
+    email_matches = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', clean_text)
     info["emails"] = list(set(email_matches))[:5]
-    phone_matches = re.findall(r'(?:\+91[\s-]?)?(?:\d[\s-]?){10}', text)
-    info["phones"] = list(set([p.strip() for p in phone_matches]))[:5]
-    # Try to find address from PIN code context
-    addr_el = soup.find(string=re.compile(r'\d{6}'))
-    if addr_el:
-        parent = addr_el.parent
-        if parent:
-            info["address"] = parent.get_text(strip=True)[:300]
+    phone_matches = re.findall(r'(?:\+91[-\s]?)?(?:\d[-\s]?){10}', clean_text)
+    info["phones"] = list(set([re.sub(r'\s', '', p.strip()) for p in phone_matches]))[:5]
+    info["address"] = extract_address(clean_text)
     return info
 
+def extract_officers(clean_text):
+    """Extract principal officer and compliance officer details."""
+    officers = {}
+    text_lower = clean_text.lower()
+    for role in ["principal officer", "compliance officer", "grievance officer"]:
+        idx = text_lower.find(role)
+        if idx != -1:
+            snippet = clean_text[idx:idx + 200]
+            name_match = re.search(r'(?:principal|compliance|grievance)\s+officer\s*[:\-–]?\s*([A-Z][a-zA-Z]+(?: [A-Z][a-zA-Z]+){0,4})', snippet)
+            if name_match:
+                name = name_match.group(1).strip()
+                # Remove trailing partial titles
+                name = re.sub(r'\s+(?:Co|Fo|Pr|Di|Ma|Ch|Se)\s*$', '', name).strip()
+                if len(name) > 2:
+                    officers[role.replace(" ", "_")] = name
+    return officers
+
 def extract_services(text_lower):
-    """Detect services mentioned on the website."""
     service_keywords = {
-        "Mutual Funds": ["mutual fund", "sip", "systematic investment"],
-        "Insurance": ["life insurance", "general insurance", "health insurance", "term insurance"],
+        "Mutual Funds & SIP": ["mutual fund", "sip", "systematic investment", "elss"],
+        "Equity / Shares": ["equity", "shares", "stock"],
+        "Life Insurance": ["life insurance", "term insurance", "term plan", "endowment", "ulip"],
+        "Health Insurance": ["health insurance", "mediclaim", "medical insurance"],
+        "General Insurance": ["general insurance", "motor insurance", "fire insurance", "travel insurance"],
         "PMS": ["portfolio management", "pms"],
-        "Tax Planning": ["tax planning", "income tax"],
-        "Retirement Planning": ["retirement", "pension"],
-        "Financial Planning": ["financial planning", "goal based"],
+        "AIF": ["alternative investment fund", "aif"],
+        "Fixed Deposits / Bonds": ["fixed deposit", "fd", "tax-free bond", "bond", "debenture", "fixed income"],
+        "Gold / Commodities": ["gold bond", "sovereign gold", "commodities"],
+        "Tax Planning": ["tax planning", "income tax", "tax return", "tax saving"],
+        "Retirement Planning": ["retirement", "pension", "superannuation"],
+        "Financial Planning": ["financial planning", "goal based", "goal-based"],
         "NRI Services": ["nri"],
-        "Fixed Income": ["fixed income", "bonds", "debenture"],
+        "Loan / Credit": ["loan against", "loan", "credit"],
         "Estate Planning": ["estate planning", "will", "succession"],
     }
     detected = []
@@ -253,12 +323,13 @@ def extract_services(text_lower):
 
 def extract_social_links(soup):
     social = {}
-    platforms = {"linkedin": "linkedin.com", "twitter": "twitter.com", "youtube": "youtube.com", "instagram": "instagram.com", "facebook": "facebook.com"}
+    platforms = {"linkedin": "linkedin.com", "twitter": "twitter.com", "x": "x.com", "youtube": "youtube.com", "instagram": "instagram.com", "facebook": "facebook.com", "whatsapp": "wa.me"}
     for link in soup.find_all("a", href=True):
         href = link["href"].lower()
         for name, domain in platforms.items():
-            if domain in href and name not in social:
-                social[name] = link["href"]
+            key = "twitter" if name == "x" else name
+            if domain in href and key not in social:
+                social[key] = link["href"]
     return social
 
 def run_compliance_checks(text, soup, detected_types, registrations, url, links_text):
@@ -377,7 +448,8 @@ async def perform_audit(url: str) -> dict:
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"}
             resp = await hc.get(url, headers=headers)
         soup = BeautifulSoup(resp.text, "lxml")
-        text = soup.get_text(separator=" ", strip=True)
+        clean = clean_soup(soup)
+        text = clean.get_text(separator=" ", strip=True)
         links_text = " ".join([a.get_text(strip=True).lower() + " " + (a.get("href", "").lower()) for a in soup.find_all("a", href=True)])
         registrations = detect_registrations(text)
         detected_types = detect_business_types(text, registrations)
@@ -385,6 +457,7 @@ async def perform_audit(url: str) -> dict:
         social = extract_social_links(soup)
         business_name = extract_business_name(soup, url)
         services = extract_services(text.lower())
+        officers = extract_officers(text)
         title = soup.find("title").string.strip() if soup.find("title") and soup.find("title").string else ""
         checks = run_compliance_checks(text, soup, detected_types, registrations, url, links_text)
         scores = calculate_scores(checks)
@@ -398,6 +471,7 @@ async def perform_audit(url: str) -> dict:
                 "contact": contact,
                 "social_links": social,
                 "services_detected": services,
+                "officers": officers,
                 "page_title": title,
             },
             "compliance_report": {**scores, "checks": checks},
@@ -673,6 +747,69 @@ async def list_enterprise_contacts(request: Request):
     contacts = await db.enterprise_contacts.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return contacts
 
+# ========== OBJECT STORAGE ==========
+def init_storage():
+    global storage_key
+    if storage_key:
+        return storage_key
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not emergent_key:
+        logger.warning("EMERGENT_LLM_KEY not set, file uploads disabled")
+        return None
+    import requests as req_lib
+    resp = req_lib.post(f"{STORAGE_URL}/init", json={"emergent_key": emergent_key}, timeout=30)
+    resp.raise_for_status()
+    storage_key = resp.json()["storage_key"]
+    return storage_key
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    import requests as req_lib
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not initialized")
+    resp = req_lib.put(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key, "Content-Type": content_type}, data=data, timeout=120)
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str):
+    import requests as req_lib
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not initialized")
+    resp = req_lib.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/svg+xml", "image/webp", "image/gif"}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+@api_router.post("/upload/logo")
+async def upload_logo(file: UploadFile = File(...)):
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: JPEG, PNG, SVG, WebP, GIF")
+    data = await file.read()
+    if len(data) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max 5MB.")
+    ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+    file_id = str(uuid.uuid4())
+    path = f"{APP_NAME}/logos/{file_id}.{ext}"
+    result = put_object(path, data, file.content_type or "image/png")
+    doc = {
+        "file_id": file_id, "storage_path": result["path"], "original_filename": file.filename,
+        "content_type": file.content_type, "size": result.get("size", len(data)),
+        "is_deleted": False, "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.files.insert_one(doc)
+    return {"file_id": file_id, "path": result["path"], "filename": file.filename, "size": len(data), "url": f"/api/files/{result['path']}"}
+
+@api_router.get("/files/{path:path}")
+async def serve_file(path: str):
+    record = await db.files.find_one({"storage_path": path, "is_deleted": False}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="File not found")
+    file_data, content_type = get_object(path)
+    return Response(content=file_data, media_type=record.get("content_type", content_type), headers={"Cache-Control": "public, max-age=86400"})
+
 # ========== INCLUDE ROUTER ==========
 app.include_router(api_router)
 
@@ -725,7 +862,11 @@ async def startup():
     await create_indexes()
     await seed_admin()
     await seed_plans()
-    # Write test credentials
+    try:
+        init_storage()
+        logger.info("Object storage initialized")
+    except Exception as e:
+        logger.warning(f"Storage init deferred: {e}")
     cred_path = Path("/app/memory/test_credentials.md")
     cred_path.parent.mkdir(parents=True, exist_ok=True)
     cred_path.write_text(f"# Test Credentials\n\n## Admin\n- Email: {os.environ.get('ADMIN_EMAIL', 'admin@finsites.in')}\n- Password: {os.environ.get('ADMIN_PASSWORD', 'admin123')}\n- Role: admin\n\n## Auth Endpoints\n- POST /api/auth/login\n- GET /api/auth/me\n- POST /api/auth/logout\n")

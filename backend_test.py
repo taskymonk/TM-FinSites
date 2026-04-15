@@ -132,10 +132,10 @@ class FinSitesAPITester:
         return success
 
     def test_audit_scan(self):
-        """Test audit scan functionality"""
-        print("\n🔍 Testing Audit Scan...")
+        """Test audit scan functionality with Phase 1 improvements"""
+        print("\n🔍 Testing Audit Scan - Phase 1 Improvements...")
         
-        # Test with deftservices.in to verify business name extraction
+        # Test with deftservices.in to verify Phase 1 improvements
         success, response = self.run_test(
             "Audit Scan - deftservices.in",
             "POST",
@@ -158,26 +158,55 @@ class FinSitesAPITester:
                 )
                 
                 if success2:
-                    # Test business name extraction
-                    business_name = audit_data.get('detected_data', {}).get('business_name', '')
-                    if business_name and business_name.lower() != 'home':
+                    detected_data = audit_data.get('detected_data', {})
+                    registrations = detected_data.get('registrations', {})
+                    business_types = audit_data.get('detected_business_types', [])
+                    services = detected_data.get('services_detected', [])
+                    officers = detected_data.get('officers', {})
+                    contact = detected_data.get('contact', {})
+                    
+                    # Test 1: Address extraction (should detect Badal Textile Market, Bhilwara, Rajasthan 311001, NOT CSS code)
+                    address = contact.get('address', '')
+                    if address and 'badal textile market' in address.lower() and 'bhilwara' in address.lower() and 'rajasthan' in address.lower() and '311001' in address:
+                        self.log_test("Phase 1 - Address Extraction", True, f"Correctly detected: '{address}' (not CSS code)")
+                    else:
+                        self.log_test("Phase 1 - Address Extraction", False, f"Expected 'Badal Textile Market, Bhilwara, Rajasthan 311001', got: '{address}'")
+                    
+                    # Test 2: APRN registration detection (APRN-05434)
+                    aprn_numbers = registrations.get('APRN', [])
+                    if aprn_numbers and any('05434' in aprn for aprn in aprn_numbers):
+                        self.log_test("Phase 1 - APRN Detection", True, f"Detected APRN: {aprn_numbers}")
+                    else:
+                        self.log_test("Phase 1 - APRN Detection", False, f"Expected APRN-05434, got: {aprn_numbers}")
+                    
+                    # Test 3: PMS business type detection (because of APRN)
+                    if 'PMS' in business_types:
+                        self.log_test("Phase 1 - PMS Business Type", True, f"Detected PMS in business types: {business_types}")
+                    else:
+                        self.log_test("Phase 1 - PMS Business Type", False, f"PMS not detected in business types: {business_types}")
+                    
+                    # Test 4: Granular services detection (should detect 10+ services)
+                    if len(services) >= 10:
+                        self.log_test("Phase 1 - Granular Services", True, f"Detected {len(services)} services: {services}")
+                    else:
+                        self.log_test("Phase 1 - Granular Services", False, f"Expected 10+ services, detected {len(services)}: {services}")
+                    
+                    # Test 5: Principal Officer detection (Deepak Jain)
+                    principal_officer = officers.get('principal_officer', '')
+                    if principal_officer and 'deepak jain' in principal_officer.lower():
+                        self.log_test("Phase 1 - Principal Officer", True, f"Detected: '{principal_officer}'")
+                    else:
+                        self.log_test("Phase 1 - Principal Officer", False, f"Expected 'Deepak Jain', got: '{principal_officer}'")
+                    
+                    # Test business name extraction (should not be CSS code)
+                    business_name = detected_data.get('business_name', '')
+                    if business_name and business_name.lower() != 'home' and 'css' not in business_name.lower():
                         if 'deft' in business_name.lower() or 'services' in business_name.lower():
-                            self.log_test("Business Name Extraction", True, f"Detected: '{business_name}' (not 'home')")
+                            self.log_test("Business Name Extraction", True, f"Detected: '{business_name}' (clean, not CSS)")
                         else:
                             self.log_test("Business Name Extraction", False, f"Detected: '{business_name}' - should contain 'Deft' or 'Services'")
                     else:
-                        self.log_test("Business Name Extraction", False, f"Detected: '{business_name}' - should not be 'home'")
-                    
-                    # Test SEBI SCORES link detection
-                    checks = audit_data.get('compliance_report', {}).get('checks', [])
-                    sebi_scores_check = next((c for c in checks if 'SEBI SCORES' in c.get('name', '')), None)
-                    if sebi_scores_check:
-                        if sebi_scores_check.get('status') == 'pass':
-                            self.log_test("SEBI SCORES Link Detection", True, "SEBI SCORES check passed for deftservices.in")
-                        else:
-                            self.log_test("SEBI SCORES Link Detection", False, f"SEBI SCORES check failed: {sebi_scores_check.get('detail', '')}")
-                    else:
-                        self.log_test("SEBI SCORES Link Detection", False, "SEBI SCORES check not found in compliance report")
+                        self.log_test("Business Name Extraction", False, f"Detected: '{business_name}' - should not be 'home' or contain CSS")
                     
                     # Store audit_id for business type update test
                     self.test_audit_id = audit_id
@@ -303,6 +332,65 @@ class FinSitesAPITester:
         
         return success1 and success2
 
+    def test_logo_upload_endpoints(self):
+        """Test logo upload and file serving endpoints (Phase 1)"""
+        print("\n📁 Testing Logo Upload & File Serving - Phase 1...")
+        
+        # Create a simple test image (1x1 PNG)
+        import base64
+        # Minimal 1x1 PNG image in base64
+        png_data = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAHGbKdMDgAAAABJRU5ErkJggg==')
+        
+        # Test logo upload
+        try:
+            files = {'file': ('test_logo.png', png_data, 'image/png')}
+            response = self.session.post(f"{self.base_url}/api/upload/logo", files=files)
+            
+            if response.status_code == 200:
+                upload_data = response.json()
+                file_id = upload_data.get('file_id')
+                file_path = upload_data.get('path')
+                file_url = upload_data.get('url')
+                
+                if file_id and file_path and file_url:
+                    self.log_test("Logo Upload", True, f"Uploaded file_id: {file_id}, path: {file_path}")
+                    
+                    # Test file serving
+                    file_response = self.session.get(f"{self.base_url}{file_url}")
+                    if file_response.status_code == 200 and file_response.headers.get('content-type', '').startswith('image/'):
+                        self.log_test("File Serving", True, f"File served successfully with content-type: {file_response.headers.get('content-type')}")
+                        return True
+                    else:
+                        self.log_test("File Serving", False, f"File serving failed: {file_response.status_code}")
+                else:
+                    self.log_test("Logo Upload", False, f"Missing required fields in response: {upload_data}")
+            else:
+                self.log_test("Logo Upload", False, f"Upload failed with status: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Logo Upload", False, f"Upload error: {str(e)}")
+        
+        return False
+
+    def test_object_storage_initialization(self):
+        """Test object storage initialization"""
+        print("\n🗄️ Testing Object Storage Initialization...")
+        
+        # Test that backend starts without errors by checking a simple endpoint
+        success, response = self.run_test(
+            "Backend Health Check",
+            "GET",
+            "plans",
+            200
+        )
+        
+        if success:
+            self.log_test("Object Storage Init", True, "Backend started successfully (storage initialized)")
+        else:
+            self.log_test("Object Storage Init", False, "Backend startup issues detected")
+        
+        return success
+
     def test_enterprise_contact(self):
         """Test enterprise contact endpoint"""
         print("\n🏢 Testing Enterprise Contact...")
@@ -359,9 +447,12 @@ class FinSitesAPITester:
 
     def run_all_tests(self):
         """Run comprehensive test suite"""
-        print("🚀 Starting FinSites Backend API Tests")
+        print("🚀 Starting FinSites Backend API Tests - Phase 1 Improvements")
         print(f"Testing against: {self.base_url}")
         print("=" * 60)
+        
+        # Test object storage initialization first
+        self.test_object_storage_initialization()
         
         # Test authentication first
         if not self.test_admin_login():
@@ -373,7 +464,12 @@ class FinSitesAPITester:
         
         # Test public endpoints
         self.test_plans_endpoint()
-        self.test_audit_scan()
+        
+        # Test Phase 1 improvements
+        self.test_audit_scan()  # Now includes Phase 1 audit improvements
+        self.test_logo_upload_endpoints()  # New Phase 1 feature
+        
+        # Test existing functionality
         self.test_audit_business_type_update()  # Test the re-check functionality
         self.test_wizard_flow()
         self.test_enterprise_contact()

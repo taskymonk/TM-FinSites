@@ -1,16 +1,28 @@
 {
   "summary": {
-    "total_tests": 25,
-    "passed_tests": 25,
-    "success_rate": "100.0%",
-    "timestamp": "2026-04-15T07:29:25.782866"
+    "total_tests": 33,
+    "passed_tests": 32,
+    "success_rate": "97.0%",
+    "timestamp": "2026-04-15T07:57:10.977277"
   },
   "detailed_results": [
+    {
+      "test": "Backend Health Check",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T07:57:08.331043"
+    },
+    {
+      "test": "Object Storage Init",
+      "success": true,
+      "details": "Backend started successfully (storage initialized)",
+      "timestamp": "2026-04-15T07:57:08.331078"
+    },
     {
       "test": "Admin Login",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:23.805309",
+      "timestamp": "2026-04-15T07:57:08.611087",
       "response_keys": [
         "id",
         "email",
@@ -22,13 +34,13 @@
       "test": "Admin Role Verification",
       "success": true,
       "details": "Admin role confirmed",
-      "timestamp": "2026-04-15T07:29:23.805354"
+      "timestamp": "2026-04-15T07:57:08.611129"
     },
     {
       "test": "Get Current User",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:23.849741",
+      "timestamp": "2026-04-15T07:57:08.669462",
       "response_keys": [
         "id",
         "email",
@@ -40,19 +52,19 @@
       "test": "Get Plans",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:23.893161"
+      "timestamp": "2026-04-15T07:57:08.726777"
     },
     {
       "test": "Plans Structure",
       "success": true,
       "details": "Found all 3 plans: ['starter', 'professional', 'enterprise']",
-      "timestamp": "2026-04-15T07:29:23.893210"
+      "timestamp": "2026-04-15T07:57:08.726814"
     },
     {
       "test": "Audit Scan - deftservices.in",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.200927",
+      "timestamp": "2026-04-15T07:57:09.969868",
       "response_keys": [
         "audit_id",
         "url",
@@ -67,14 +79,14 @@
     {
       "test": "Audit ID Generation",
       "success": true,
-      "details": "Generated audit_id: 6a77fb21-7eeb-4684-bb05-9acfb38e86c7",
-      "timestamp": "2026-04-15T07:29:25.200982"
+      "details": "Generated audit_id: e471d60c-b7d4-4f81-8b1a-08bb470e7ed4",
+      "timestamp": "2026-04-15T07:57:09.969906"
     },
     {
       "test": "Get Audit Result",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.249476",
+      "timestamp": "2026-04-15T07:57:10.026432",
       "response_keys": [
         "audit_id",
         "url",
@@ -86,22 +98,58 @@
       ]
     },
     {
-      "test": "Business Name Extraction",
+      "test": "Phase 1 - Address Extraction",
       "success": true,
-      "details": "Detected: 'Deft Services - \u0938\u092a\u0928\u0947 \u0906\u092a\u0915\u0947, \u091c\u093f\u092e\u094d\u092f\u093e\u0926\u093e\u0930\u0940 \u0939\u092e\u093e\u0930\u0940' (not 'home')",
-      "timestamp": "2026-04-15T07:29:25.249520"
+      "details": "Correctly detected: '21st, Badal Textile Market Pur Road Bhilwara, Rajasthan \u2013 311001' (not CSS code)",
+      "timestamp": "2026-04-15T07:57:10.026474"
     },
     {
-      "test": "SEBI SCORES Link Detection",
+      "test": "Phase 1 - APRN Detection",
       "success": true,
-      "details": "SEBI SCORES check passed for deftservices.in",
-      "timestamp": "2026-04-15T07:29:25.249529"
+      "details": "Detected APRN: ['APRN05434', 'APRN-05434']",
+      "timestamp": "2026-04-15T07:57:10.026483"
+    },
+    {
+      "test": "Phase 1 - PMS Business Type",
+      "success": true,
+      "details": "Detected PMS in business types: ['MFD', 'Insurance', 'PMS']",
+      "timestamp": "2026-04-15T07:57:10.026488"
+    },
+    {
+      "test": "Phase 1 - Granular Services",
+      "success": true,
+      "details": "Detected 12 services: ['Mutual Funds & SIP', 'Equity / Shares', 'Life Insurance', 'Health Insurance', 'PMS', 'Fixed Deposits / Bonds', 'Gold / Commodities', 'Tax Planning', 'Retirement Planning', 'Financial Planning', 'Loan / Credit', 'Estate Planning']",
+      "timestamp": "2026-04-15T07:57:10.026493"
+    },
+    {
+      "test": "Phase 1 - Principal Officer",
+      "success": false,
+      "details": "Expected 'Deepak Jain', got: ''",
+      "timestamp": "2026-04-15T07:57:10.026498"
+    },
+    {
+      "test": "Business Name Extraction",
+      "success": true,
+      "details": "Detected: 'Deft Services - \u0938\u092a\u0928\u0947 \u0906\u092a\u0915\u0947, \u091c\u093f\u092e\u094d\u092f\u093e\u0926\u093e\u0930\u0940 \u0939\u092e\u093e\u0930\u0940' (clean, not CSS)",
+      "timestamp": "2026-04-15T07:57:10.026504"
+    },
+    {
+      "test": "Logo Upload",
+      "success": true,
+      "details": "Uploaded file_id: 09c1988c-fe1b-4f8f-8e1c-d96013948688, path: finsites/logos/09c1988c-fe1b-4f8f-8e1c-d96013948688.png",
+      "timestamp": "2026-04-15T07:57:10.258860"
+    },
+    {
+      "test": "File Serving",
+      "success": true,
+      "details": "File served successfully with content-type: image/png",
+      "timestamp": "2026-04-15T07:57:10.416207"
     },
     {
       "test": "Update Audit Business Types",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.295467",
+      "timestamp": "2026-04-15T07:57:10.471783",
       "response_keys": [
         "audit_id",
         "url",
@@ -116,19 +164,19 @@
       "test": "Business Types Updated",
       "success": true,
       "details": "Updated to: ['MFD', 'Insurance', 'PMS']",
-      "timestamp": "2026-04-15T07:29:25.295510"
+      "timestamp": "2026-04-15T07:57:10.471823"
     },
     {
       "test": "Compliance Re-check",
       "success": true,
       "details": "Re-generated 26 compliance checks",
-      "timestamp": "2026-04-15T07:29:25.295516"
+      "timestamp": "2026-04-15T07:57:10.471829"
     },
     {
       "test": "Start Wizard",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.340639",
+      "timestamp": "2026-04-15T07:57:10.526929",
       "response_keys": [
         "session_id",
         "audit_id",
@@ -146,14 +194,14 @@
     {
       "test": "Session ID Generation",
       "success": true,
-      "details": "Generated session_id: eff001e3-4ed8-44f1-8533-f7ce231da85a",
-      "timestamp": "2026-04-15T07:29:25.340679"
+      "details": "Generated session_id: b491c163-8f4a-4300-86c9-c0b25c530f53",
+      "timestamp": "2026-04-15T07:57:10.527003"
     },
     {
       "test": "Get Wizard Session",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.384270",
+      "timestamp": "2026-04-15T07:57:10.583205",
       "response_keys": [
         "session_id",
         "audit_id",
@@ -172,7 +220,7 @@
       "test": "Save Wizard Step",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.468701",
+      "timestamp": "2026-04-15T07:57:10.640281",
       "response_keys": [
         "session_id",
         "audit_id",
@@ -191,7 +239,7 @@
       "test": "Enterprise Contact",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.518544",
+      "timestamp": "2026-04-15T07:57:10.696833",
       "response_keys": [
         "contact_id",
         "message"
@@ -200,14 +248,14 @@
     {
       "test": "Enterprise Contact ID",
       "success": true,
-      "details": "Generated contact_id: 2bcd9536-9128-4cf6-b7b6-9a8e4bc4e1b3",
-      "timestamp": "2026-04-15T07:29:25.518582"
+      "details": "Generated contact_id: fe82fed1-a31c-4a52-b607-30842835aa6a",
+      "timestamp": "2026-04-15T07:57:10.696870"
     },
     {
       "test": "Admin Stats",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.565685",
+      "timestamp": "2026-04-15T07:57:10.757116",
       "response_keys": [
         "total_submissions",
         "by_status",
@@ -220,13 +268,13 @@
       "test": "Admin Stats Structure",
       "success": true,
       "details": "All required keys present",
-      "timestamp": "2026-04-15T07:29:25.565725"
+      "timestamp": "2026-04-15T07:57:10.757153"
     },
     {
       "test": "Admin Submissions List",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T07:29:25.650854",
+      "timestamp": "2026-04-15T07:57:10.814313",
       "response_keys": [
         "submissions",
         "total",
@@ -238,7 +286,7 @@
       "test": "Invalid Login",
       "success": true,
       "details": "Status: 401",
-      "timestamp": "2026-04-15T07:29:25.694623",
+      "timestamp": "2026-04-15T07:57:10.869284",
       "response_keys": [
         "detail"
       ]
@@ -247,7 +295,7 @@
       "test": "Non-existent Audit",
       "success": true,
       "details": "Status: 404",
-      "timestamp": "2026-04-15T07:29:25.739648",
+      "timestamp": "2026-04-15T07:57:10.922638",
       "response_keys": [
         "detail"
       ]
@@ -256,7 +304,7 @@
       "test": "Non-existent Wizard",
       "success": true,
       "details": "Status: 404",
-      "timestamp": "2026-04-15T07:29:25.782683",
+      "timestamp": "2026-04-15T07:57:10.977108",
       "response_keys": [
         "detail"
       ]
