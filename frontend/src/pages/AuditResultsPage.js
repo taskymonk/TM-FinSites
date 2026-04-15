@@ -5,7 +5,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2, XCircle, AlertTriangle, ArrowRight, Shield, Globe, Loader2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
@@ -37,9 +36,11 @@ export default function AuditResultsPage() {
   const navigate = useNavigate();
   const [audit, setAudit] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [recheckLoading, setRecheckLoading] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API}/api/audit/${auditId}`).then(r => { setAudit(r.data); setLoading(false); }).catch(() => { toast.error("Audit not found"); setLoading(false); });
+    axios.get(`${API}/api/audit/${auditId}`).then(r => { setAudit(r.data); setSelectedTypes(r.data.detected_business_types || []); setLoading(false); }).catch(() => { toast.error("Audit not found"); setLoading(false); });
   }, [auditId]);
 
   if (loading) return (
@@ -55,12 +56,19 @@ export default function AuditResultsPage() {
   const statusIcon = { pass: <CheckCircle2 className="w-4 h-4 text-green-500" />, fail: <XCircle className="w-4 h-4 text-red-500" />, warning: <AlertTriangle className="w-4 h-4 text-yellow-500" /> };
   const grade = report.overall_score >= 80 ? "A" : report.overall_score >= 60 ? "B" : report.overall_score >= 40 ? "C" : report.overall_score >= 20 ? "D" : "F";
 
-  const handleTypeChange = async (val) => {
+  const toggleType = (type) => {
+    setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+  };
+
+  const handleRecheck = async () => {
+    if (selectedTypes.length === 0) { toast.error("Select at least one business type"); return; }
+    setRecheckLoading(true);
     try {
-      const { data } = await axios.put(`${API}/api/audit/${auditId}/business-type`, { business_types: [val] });
+      const { data } = await axios.put(`${API}/api/audit/${auditId}/business-type`, { business_types: selectedTypes });
       setAudit(data);
-      toast.success("Business type updated. Re-scan for updated compliance checks.");
-    } catch { toast.error("Failed to update"); }
+      toast.success("Compliance re-checked with updated business types!");
+    } catch { toast.error("Failed to re-check"); }
+    finally { setRecheckLoading(false); }
   };
 
   return (
@@ -115,26 +123,39 @@ export default function AuditResultsPage() {
               {/* Detected Info */}
               <div className="glass rounded-2xl p-6 mb-8" data-testid="audit-detected-info">
                 <h3 className="font-semibold mb-4 font-[var(--font-heading)]">Detected Information</h3>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Business Types Detected</p>
-                    <div className="flex flex-wrap gap-1.5">
+                    <p className="text-xs text-muted-foreground mb-2">Business Types Detected</p>
+                    <div className="flex flex-wrap gap-1.5 mb-4">
                       {(audit.detected_business_types || []).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
                     </div>
-                    <div className="mt-3">
-                      <p className="text-xs text-muted-foreground mb-1">Change business type to re-check</p>
-                      <Select onValueChange={handleTypeChange} data-testid="audit-type-change">
-                        <SelectTrigger className="w-48 h-8 text-xs"><SelectValue placeholder="Change type..." /></SelectTrigger>
-                        <SelectContent>{ALL_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                      </Select>
+                    <p className="text-xs text-muted-foreground mb-2">Select types to re-check compliance</p>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {ALL_TYPES.map(t => (
+                        <button key={t} onClick={() => toggleType(t)} data-testid={`recheck-type-${t}`}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${selectedTypes.includes(t) ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))]" : "border-border text-muted-foreground hover:border-[hsl(var(--primary)/0.3)]"}`}>
+                          {t}
+                        </button>
+                      ))}
                     </div>
+                    <Button size="sm" variant="outline" onClick={handleRecheck} disabled={recheckLoading} className="gap-2 text-xs" data-testid="recheck-btn">
+                      {recheckLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />} Re-check Compliance
+                    </Button>
                   </div>
                   <div>
-                    {audit.detected_data?.business_name && <div className="mb-2"><p className="text-xs text-muted-foreground">Business Name</p><p className="text-sm font-medium">{audit.detected_data.business_name}</p></div>}
+                    {audit.detected_data?.business_name && <div className="mb-3"><p className="text-xs text-muted-foreground">Business Name</p><p className="text-sm font-medium">{audit.detected_data.business_name}</p></div>}
                     {Object.keys(audit.detected_data?.registrations || {}).length > 0 && (
-                      <div><p className="text-xs text-muted-foreground mb-1">Registrations Found</p>
+                      <div className="mb-3"><p className="text-xs text-muted-foreground mb-1">Registrations Found</p>
                         {Object.entries(audit.detected_data.registrations).map(([k, v]) => <p key={k} className="text-xs font-mono">{k}: {Array.isArray(v) ? v.join(", ") : v}</p>)}
                       </div>
+                    )}
+                    {(audit.detected_data?.services_detected || []).length > 0 && (
+                      <div><p className="text-xs text-muted-foreground mb-1">Services Detected</p>
+                        <div className="flex flex-wrap gap-1">{audit.detected_data.services_detected.map(s => <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>)}</div>
+                      </div>
+                    )}
+                    {audit.detected_data?.contact?.emails?.length > 0 && (
+                      <div className="mt-2"><p className="text-xs text-muted-foreground">Contact</p><p className="text-xs font-mono">{audit.detected_data.contact.emails[0]}</p></div>
                     )}
                   </div>
                 </div>

@@ -1,16 +1,16 @@
 {
   "summary": {
-    "total_tests": 20,
-    "passed_tests": 20,
+    "total_tests": 25,
+    "passed_tests": 25,
     "success_rate": "100.0%",
-    "timestamp": "2026-04-15T06:52:48.469426"
+    "timestamp": "2026-04-15T07:29:25.782866"
   },
   "detailed_results": [
     {
       "test": "Admin Login",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:47.735406",
+      "timestamp": "2026-04-15T07:29:23.805309",
       "response_keys": [
         "id",
         "email",
@@ -22,13 +22,13 @@
       "test": "Admin Role Verification",
       "success": true,
       "details": "Admin role confirmed",
-      "timestamp": "2026-04-15T06:52:47.735438"
+      "timestamp": "2026-04-15T07:29:23.805354"
     },
     {
       "test": "Get Current User",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:47.781196",
+      "timestamp": "2026-04-15T07:29:23.849741",
       "response_keys": [
         "id",
         "email",
@@ -40,19 +40,19 @@
       "test": "Get Plans",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:47.828763"
+      "timestamp": "2026-04-15T07:29:23.893161"
     },
     {
       "test": "Plans Structure",
       "success": true,
       "details": "Found all 3 plans: ['starter', 'professional', 'enterprise']",
-      "timestamp": "2026-04-15T06:52:47.828808"
+      "timestamp": "2026-04-15T07:29:23.893210"
     },
     {
-      "test": "Audit Scan",
+      "test": "Audit Scan - deftservices.in",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:48.012168",
+      "timestamp": "2026-04-15T07:29:25.200927",
       "response_keys": [
         "audit_id",
         "url",
@@ -60,20 +60,21 @@
         "detected_business_types",
         "detected_data",
         "compliance_report",
+        "raw_scan",
         "created_at"
       ]
     },
     {
       "test": "Audit ID Generation",
       "success": true,
-      "details": "Generated audit_id: a5313c8b-de41-433e-b113-ba78c5f37830",
-      "timestamp": "2026-04-15T06:52:48.012206"
+      "details": "Generated audit_id: 6a77fb21-7eeb-4684-bb05-9acfb38e86c7",
+      "timestamp": "2026-04-15T07:29:25.200982"
     },
     {
       "test": "Get Audit Result",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:48.057154",
+      "timestamp": "2026-04-15T07:29:25.249476",
       "response_keys": [
         "audit_id",
         "url",
@@ -85,10 +86,49 @@
       ]
     },
     {
+      "test": "Business Name Extraction",
+      "success": true,
+      "details": "Detected: 'Deft Services - \u0938\u092a\u0928\u0947 \u0906\u092a\u0915\u0947, \u091c\u093f\u092e\u094d\u092f\u093e\u0926\u093e\u0930\u0940 \u0939\u092e\u093e\u0930\u0940' (not 'home')",
+      "timestamp": "2026-04-15T07:29:25.249520"
+    },
+    {
+      "test": "SEBI SCORES Link Detection",
+      "success": true,
+      "details": "SEBI SCORES check passed for deftservices.in",
+      "timestamp": "2026-04-15T07:29:25.249529"
+    },
+    {
+      "test": "Update Audit Business Types",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T07:29:25.295467",
+      "response_keys": [
+        "audit_id",
+        "url",
+        "status",
+        "detected_business_types",
+        "detected_data",
+        "compliance_report",
+        "created_at"
+      ]
+    },
+    {
+      "test": "Business Types Updated",
+      "success": true,
+      "details": "Updated to: ['MFD', 'Insurance', 'PMS']",
+      "timestamp": "2026-04-15T07:29:25.295510"
+    },
+    {
+      "test": "Compliance Re-check",
+      "success": true,
+      "details": "Re-generated 26 compliance checks",
+      "timestamp": "2026-04-15T07:29:25.295516"
+    },
+    {
       "test": "Start Wizard",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:48.104019",
+      "timestamp": "2026-04-15T07:29:25.340639",
       "response_keys": [
         "session_id",
         "audit_id",
@@ -106,14 +146,14 @@
     {
       "test": "Session ID Generation",
       "success": true,
-      "details": "Generated session_id: d31b4360-2759-46bc-b258-e7a09a8acdac",
-      "timestamp": "2026-04-15T06:52:48.104054"
+      "details": "Generated session_id: eff001e3-4ed8-44f1-8533-f7ce231da85a",
+      "timestamp": "2026-04-15T07:29:25.340679"
     },
     {
       "test": "Get Wizard Session",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:48.147653",
+      "timestamp": "2026-04-15T07:29:25.384270",
       "response_keys": [
         "session_id",
         "audit_id",
@@ -132,7 +172,7 @@
       "test": "Save Wizard Step",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:48.192734",
+      "timestamp": "2026-04-15T07:29:25.468701",
       "response_keys": [
         "session_id",
         "audit_id",
@@ -151,7 +191,7 @@
       "test": "Enterprise Contact",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:48.237820",
+      "timestamp": "2026-04-15T07:29:25.518544",
       "response_keys": [
         "contact_id",
         "message"
@@ -160,14 +200,14 @@
     {
       "test": "Enterprise Contact ID",
       "success": true,
-      "details": "Generated contact_id: 3c986f36-9dd0-4e07-84f4-460e00603bb5",
-      "timestamp": "2026-04-15T06:52:48.237859"
+      "details": "Generated contact_id: 2bcd9536-9128-4cf6-b7b6-9a8e4bc4e1b3",
+      "timestamp": "2026-04-15T07:29:25.518582"
     },
     {
       "test": "Admin Stats",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:48.287409",
+      "timestamp": "2026-04-15T07:29:25.565685",
       "response_keys": [
         "total_submissions",
         "by_status",
@@ -180,13 +220,13 @@
       "test": "Admin Stats Structure",
       "success": true,
       "details": "All required keys present",
-      "timestamp": "2026-04-15T06:52:48.287448"
+      "timestamp": "2026-04-15T07:29:25.565725"
     },
     {
       "test": "Admin Submissions List",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2026-04-15T06:52:48.332770",
+      "timestamp": "2026-04-15T07:29:25.650854",
       "response_keys": [
         "submissions",
         "total",
@@ -198,7 +238,7 @@
       "test": "Invalid Login",
       "success": true,
       "details": "Status: 401",
-      "timestamp": "2026-04-15T06:52:48.379111",
+      "timestamp": "2026-04-15T07:29:25.694623",
       "response_keys": [
         "detail"
       ]
@@ -207,7 +247,7 @@
       "test": "Non-existent Audit",
       "success": true,
       "details": "Status: 404",
-      "timestamp": "2026-04-15T06:52:48.423172",
+      "timestamp": "2026-04-15T07:29:25.739648",
       "response_keys": [
         "detail"
       ]
@@ -216,7 +256,7 @@
       "test": "Non-existent Wizard",
       "success": true,
       "details": "Status: 404",
-      "timestamp": "2026-04-15T06:52:48.469268",
+      "timestamp": "2026-04-15T07:29:25.782683",
       "response_keys": [
         "detail"
       ]

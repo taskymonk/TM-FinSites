@@ -174,18 +174,82 @@ def detect_business_types(text, registrations):
             detected.append(btype)
     return detected if detected else ["Unknown"]
 
+def extract_business_name(soup, url):
+    """Extract business name using multiple strategies."""
+    # Strategy 1: og:site_name
+    og_site = soup.find("meta", property="og:site_name")
+    if og_site and og_site.get("content", "").strip():
+        return og_site["content"].strip()
+    # Strategy 2: og:title (often has the brand name)
+    og_title = soup.find("meta", property="og:title")
+    if og_title and og_title.get("content", "").strip():
+        name = og_title["content"].strip()
+        if name.lower() not in ("home", "homepage", "index", "welcome"):
+            return name.split("|")[0].split("-")[0].strip()
+    # Strategy 3: Footer copyright pattern © 2024 Company Name
+    copyright_match = re.search(r'©\s*\d{4}\s+([^.|,\n]{3,60})', soup.get_text())
+    if copyright_match:
+        name = copyright_match.group(1).strip().rstrip('.')
+        if name.lower() not in ("all rights reserved",):
+            return name
+    # Strategy 4: Title tag (but skip generic titles like "home")
+    title_el = soup.find("title")
+    if title_el and title_el.string:
+        title = title_el.string.strip()
+        if title.lower() not in ("home", "homepage", "index", "welcome", ""):
+            parts = re.split(r'[|\-–—]', title)
+            # Try last part first (often "Brand Name" in "Page - Brand Name")
+            for part in reversed(parts):
+                p = part.strip()
+                if p.lower() not in ("home", "homepage", "index", "welcome", ""):
+                    return p
+    # Strategy 5: h1 tag
+    h1 = soup.find("h1")
+    if h1 and h1.get_text(strip=True):
+        h1_text = h1.get_text(strip=True)
+        if len(h1_text) < 80 and h1_text.lower() not in ("home", "welcome"):
+            return h1_text
+    # Strategy 6: Domain name
+    try:
+        from urllib.parse import urlparse
+        domain = urlparse(url).hostname or ""
+        domain = domain.replace("www.", "").split(".")[0]
+        return domain.title()
+    except:
+        return ""
+
 def extract_contact_info(soup, text):
     info = {"phones": [], "emails": [], "address": ""}
     email_matches = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', text)
     info["emails"] = list(set(email_matches))[:5]
     phone_matches = re.findall(r'(?:\+91[\s-]?)?(?:\d[\s-]?){10}', text)
     info["phones"] = list(set([p.strip() for p in phone_matches]))[:5]
+    # Try to find address from PIN code context
     addr_el = soup.find(string=re.compile(r'\d{6}'))
     if addr_el:
         parent = addr_el.parent
         if parent:
             info["address"] = parent.get_text(strip=True)[:300]
     return info
+
+def extract_services(text_lower):
+    """Detect services mentioned on the website."""
+    service_keywords = {
+        "Mutual Funds": ["mutual fund", "sip", "systematic investment"],
+        "Insurance": ["life insurance", "general insurance", "health insurance", "term insurance"],
+        "PMS": ["portfolio management", "pms"],
+        "Tax Planning": ["tax planning", "income tax"],
+        "Retirement Planning": ["retirement", "pension"],
+        "Financial Planning": ["financial planning", "goal based"],
+        "NRI Services": ["nri"],
+        "Fixed Income": ["fixed income", "bonds", "debenture"],
+        "Estate Planning": ["estate planning", "will", "succession"],
+    }
+    detected = []
+    for service, keywords in service_keywords.items():
+        if any(kw in text_lower for kw in keywords):
+            detected.append(service)
+    return detected
 
 def extract_social_links(soup):
     social = {}
@@ -216,8 +280,8 @@ def run_compliance_checks(text, soup, detected_types, registrations, url, links_
     add("U9", "Past Performance Disclaimer", "Compliance", "major", "past performance" in text_lower, "Past performance disclaimer")
     add("U10", "Registration in Footer", "Compliance", "critical", bool(registrations), "Registration numbers found" if registrations else "No registration numbers detected")
     add("U11", "Contact Information", "Content", "major", bool(re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', text)), "Contact email found")
-    add("U12", "SEBI SCORES Link", "Compliance", "major", "scores.sebi.gov.in" in text_lower or "scores.gov.in" in text_lower, "SEBI SCORES link") if any(t in detected_types for t in ["MFD", "PMS", "AIF", "RIA", "SIF"]) else None
-    add("U13", "IRDAI IGMS Link", "Compliance", "major", "igms.irda" in text_lower, "IRDAI IGMS link") if "Insurance" in detected_types else None
+    add("U12", "SEBI SCORES Link", "Compliance", "major", "scores.sebi.gov.in" in text_lower or "scores.sebi.gov.in" in links_text or "sebi scores" in text_lower or "scores portal" in text_lower, "SEBI SCORES link") if any(t in detected_types for t in ["MFD", "PMS", "AIF", "RIA", "SIF"]) else None
+    add("U13", "IRDAI IGMS Link", "Compliance", "major", "igms.irda" in text_lower or "igms.irda" in links_text or "irdai igms" in text_lower, "IRDAI IGMS link") if "Insurance" in detected_types else None
 
     # MFD checks
     if "MFD" in detected_types:
@@ -319,10 +383,11 @@ async def perform_audit(url: str) -> dict:
         detected_types = detect_business_types(text, registrations)
         contact = extract_contact_info(soup, text)
         social = extract_social_links(soup)
+        business_name = extract_business_name(soup, url)
+        services = extract_services(text.lower())
         title = soup.find("title").string.strip() if soup.find("title") and soup.find("title").string else ""
         checks = run_compliance_checks(text, soup, detected_types, registrations, url, links_text)
         scores = calculate_scores(checks)
-        business_name = title.split("|")[0].split("-")[0].strip() if title else ""
 
         return {
             "audit_id": audit_id, "url": url, "status": "completed",
@@ -332,10 +397,11 @@ async def perform_audit(url: str) -> dict:
                 "registrations": registrations,
                 "contact": contact,
                 "social_links": social,
-                "services_detected": [],
+                "services_detected": services,
                 "page_title": title,
             },
             "compliance_report": {**scores, "checks": checks},
+            "raw_scan": {"text": text[:50000], "links_text": links_text[:20000], "url": url},
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
     except httpx.TimeoutException:
@@ -378,7 +444,7 @@ async def scan_website(req: AuditScanRequest):
 
 @api_router.get("/audit/{audit_id}")
 async def get_audit(audit_id: str):
-    audit = await db.audits.find_one({"audit_id": audit_id}, {"_id": 0})
+    audit = await db.audits.find_one({"audit_id": audit_id}, {"_id": 0, "raw_scan": 0})
     if not audit:
         raise HTTPException(status_code=404, detail="Audit not found")
     return audit
@@ -388,8 +454,24 @@ async def update_audit_business_type(audit_id: str, req: AuditBusinessTypeUpdate
     audit = await db.audits.find_one({"audit_id": audit_id}, {"_id": 0})
     if not audit:
         raise HTTPException(status_code=404, detail="Audit not found")
-    await db.audits.update_one({"audit_id": audit_id}, {"$set": {"detected_business_types": req.business_types}})
-    audit["detected_business_types"] = req.business_types
+    # Re-run compliance checks with new business types using stored raw data
+    raw = audit.get("raw_scan", {})
+    text = raw.get("text", "")
+    links_text = raw.get("links_text", "")
+    url = raw.get("url", audit.get("url", ""))
+    registrations = audit.get("detected_data", {}).get("registrations", {})
+    if text:
+        soup = BeautifulSoup(text, "lxml") if "<" in text else None
+        checks = run_compliance_checks(text, soup or BeautifulSoup("", "lxml"), req.business_types, registrations, url, links_text)
+        scores = calculate_scores(checks)
+        report = {**scores, "checks": checks}
+        await db.audits.update_one({"audit_id": audit_id}, {"$set": {"detected_business_types": req.business_types, "compliance_report": report}})
+        audit["detected_business_types"] = req.business_types
+        audit["compliance_report"] = report
+    else:
+        await db.audits.update_one({"audit_id": audit_id}, {"$set": {"detected_business_types": req.business_types}})
+        audit["detected_business_types"] = req.business_types
+    audit.pop("raw_scan", None)
     return audit
 
 # ========== WIZARD ROUTES ==========

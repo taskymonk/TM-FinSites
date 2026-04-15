@@ -135,13 +135,13 @@ class FinSitesAPITester:
         """Test audit scan functionality"""
         print("\n🔍 Testing Audit Scan...")
         
-        # Test with a valid URL
+        # Test with deftservices.in to verify business name extraction
         success, response = self.run_test(
-            "Audit Scan",
+            "Audit Scan - deftservices.in",
             "POST",
             "audit/scan",
             200,
-            data={"url": "https://example.com"}
+            data={"url": "https://deftservices.in/"}
         )
         
         if success:
@@ -150,12 +150,38 @@ class FinSitesAPITester:
                 self.log_test("Audit ID Generation", True, f"Generated audit_id: {audit_id}")
                 
                 # Test retrieving the audit
-                success2, _ = self.run_test(
+                success2, audit_data = self.run_test(
                     "Get Audit Result",
                     "GET",
                     f"audit/{audit_id}",
                     200
                 )
+                
+                if success2:
+                    # Test business name extraction
+                    business_name = audit_data.get('detected_data', {}).get('business_name', '')
+                    if business_name and business_name.lower() != 'home':
+                        if 'deft' in business_name.lower() or 'services' in business_name.lower():
+                            self.log_test("Business Name Extraction", True, f"Detected: '{business_name}' (not 'home')")
+                        else:
+                            self.log_test("Business Name Extraction", False, f"Detected: '{business_name}' - should contain 'Deft' or 'Services'")
+                    else:
+                        self.log_test("Business Name Extraction", False, f"Detected: '{business_name}' - should not be 'home'")
+                    
+                    # Test SEBI SCORES link detection
+                    checks = audit_data.get('compliance_report', {}).get('checks', [])
+                    sebi_scores_check = next((c for c in checks if 'SEBI SCORES' in c.get('name', '')), None)
+                    if sebi_scores_check:
+                        if sebi_scores_check.get('status') == 'pass':
+                            self.log_test("SEBI SCORES Link Detection", True, "SEBI SCORES check passed for deftservices.in")
+                        else:
+                            self.log_test("SEBI SCORES Link Detection", False, f"SEBI SCORES check failed: {sebi_scores_check.get('detail', '')}")
+                    else:
+                        self.log_test("SEBI SCORES Link Detection", False, "SEBI SCORES check not found in compliance report")
+                    
+                    # Store audit_id for business type update test
+                    self.test_audit_id = audit_id
+                
                 return success2
             else:
                 self.log_test("Audit ID Generation", False, "No audit_id in response")
@@ -211,6 +237,41 @@ class FinSitesAPITester:
         )
         
         return success3
+        
+    def test_audit_business_type_update(self):
+        """Test audit business type update (re-check functionality)"""
+        print("\n🔄 Testing Audit Business Type Update...")
+        
+        if not hasattr(self, 'test_audit_id'):
+            self.log_test("Business Type Update", False, "No audit_id available from previous test")
+            return False
+        
+        # Test updating business types and re-running compliance
+        success, response = self.run_test(
+            "Update Audit Business Types",
+            "PUT",
+            f"audit/{self.test_audit_id}/business-type",
+            200,
+            data={"business_types": ["MFD", "Insurance", "PMS"]}
+        )
+        
+        if success:
+            # Verify the business types were updated
+            updated_types = response.get('detected_business_types', [])
+            expected_types = ["MFD", "Insurance", "PMS"]
+            if set(updated_types) == set(expected_types):
+                self.log_test("Business Types Updated", True, f"Updated to: {updated_types}")
+                
+                # Verify compliance report was re-generated
+                compliance_report = response.get('compliance_report', {})
+                if compliance_report.get('checks'):
+                    self.log_test("Compliance Re-check", True, f"Re-generated {len(compliance_report['checks'])} compliance checks")
+                else:
+                    self.log_test("Compliance Re-check", False, "No compliance checks in updated report")
+            else:
+                self.log_test("Business Types Updated", False, f"Expected {expected_types}, got {updated_types}")
+        
+        return success
 
     def test_admin_endpoints(self):
         """Test admin-only endpoints"""
@@ -313,6 +374,7 @@ class FinSitesAPITester:
         # Test public endpoints
         self.test_plans_endpoint()
         self.test_audit_scan()
+        self.test_audit_business_type_update()  # Test the re-check functionality
         self.test_wizard_flow()
         self.test_enterprise_contact()
         

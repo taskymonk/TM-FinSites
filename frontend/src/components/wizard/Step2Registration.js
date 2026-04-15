@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
 const STATES = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Delhi","Chandigarh","Puducherry","Ladakh","J&K","Lakshadweep","A&N Islands","Dadra & Nagar Haveli and Daman & Diu"];
 
@@ -53,6 +54,30 @@ export default function Step2Registration({ data, businessTypes, contact, onChan
               <div className="sm:col-span-2"><Field label="Professional Bio"><Textarea value={ga.bio || ""} onChange={e => update("group_a", "bio", e.target.value)} placeholder="Describe your professional journey and philosophy..." rows={3} data-testid="field-bio" /></Field></div>
               <Field label="LinkedIn"><Input value={ga.linkedin || ""} onChange={e => update("group_a", "linkedin", e.target.value)} placeholder="https://linkedin.com/in/..." data-testid="field-linkedin" /></Field>
               <Field label="Website (if any)"><Input value={ga.website || ""} onChange={e => update("group_a", "website", e.target.value)} placeholder="https://..." data-testid="field-website" /></Field>
+              <div className="sm:col-span-2 glass rounded-lg p-4 mt-2">
+                <h4 className="text-sm font-semibold mb-3 font-[var(--font-heading)]">Logo & Branding</h4>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field label="Do you have a logo?">
+                    <div className="flex items-center gap-3 h-10"><Switch checked={ga.has_logo || false} onCheckedChange={v => update("group_a", "has_logo", v)} data-testid="field-has-logo" /><span className="text-sm">{ga.has_logo ? "Yes" : "No"}</span></div>
+                  </Field>
+                  {ga.has_logo && (
+                    <Field label="Logo URL (paste a link to your logo)"><Input value={ga.logo_url || ""} onChange={e => update("group_a", "logo_url", e.target.value)} placeholder="https://drive.google.com/... or any image URL" data-testid="field-logo-url" /></Field>
+                  )}
+                  {ga.has_logo && (
+                    <Field label="Brand Primary Color">
+                      <div className="flex gap-2"><input type="color" value={ga.brand_primary || "#0055FF"} onChange={e => update("group_a", "brand_primary", e.target.value)} className="w-10 h-10 rounded cursor-pointer" /><Input value={ga.brand_primary || ""} onChange={e => update("group_a", "brand_primary", e.target.value)} className="flex-1 font-mono text-xs" placeholder="#0055FF" data-testid="field-brand-primary" /></div>
+                    </Field>
+                  )}
+                  {ga.has_logo && (
+                    <Field label="Brand Accent Color">
+                      <div className="flex gap-2"><input type="color" value={ga.brand_accent || "#00E676"} onChange={e => update("group_a", "brand_accent", e.target.value)} className="w-10 h-10 rounded cursor-pointer" /><Input value={ga.brand_accent || ""} onChange={e => update("group_a", "brand_accent", e.target.value)} className="flex-1 font-mono text-xs" placeholder="#00E676" data-testid="field-brand-accent" /></div>
+                    </Field>
+                  )}
+                  {!ga.has_logo && (
+                    <div className="sm:col-span-2"><p className="text-xs text-muted-foreground">No worries! We'll design a logo-appropriate header for your website. You can share your logo later or we can help create one.</p></div>
+                  )}
+                </div>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
