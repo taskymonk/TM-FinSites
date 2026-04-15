@@ -1,0 +1,109 @@
+{
+  "theme": "dark",
+  "archetype": "5 (Jewel & Luxury) + 7 (Electric & Neon)",
+  "rationale": "The platform requires a futuristic theme with vibrant accents serving Indian financial professionals. To maintain trust while feeling cutting-edge, we use a deep obsidian/midnight blue base (Archetype 5) coupled with vibrant neon cyan and mint accents (Archetype 7). This provides a premium 'High-Tech Trust' aesthetic. It supports Light/Dark/System toggles.",
+  "colors": {
+    "light": {
+      "background": "#F8FAFC",
+      "foreground": "#0F172A",
+      "card": "#FFFFFF",
+      "card_foreground": "#0F172A",
+      "primary": "#0055FF",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#F1F5F9",
+      "secondary_foreground": "#0F172A",
+      "accent": "#00E676",
+      "accent_foreground": "#0F172A",
+      "muted": "#F1F5F9",
+      "muted_foreground": "#64748B",
+      "border": "#E2E8F0",
+      "input": "#E2E8F0",
+      "ring": "#0055FF"
+    },
+    "dark": {
+      "background": "#050A18",
+      "foreground": "#F8FAFC",
+      "card": "#0B1229",
+      "card_foreground": "#F8FAFC",
+      "primary": "#00E5FF",
+      "primary_foreground": "#050A18",
+      "secondary": "#1E293B",
+      "secondary_foreground": "#F8FAFC",
+      "accent": "#00E676",
+      "accent_foreground": "#050A18",
+      "muted": "#1E293B",
+      "muted_foreground": "#94A3B8",
+      "border": "#1E293B",
+      "input": "#1E293B",
+      "ring": "#00E5FF"
+    }
+  },
+  "typography": {
+    "heading_font": "Outfit",
+    "body_font": "Manrope",
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
+      "h3": "text-xl sm:text-2xl font-semibold",
+      "h4": "text-lg sm:text-xl font-medium",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm uppercase tracking-[0.2em] font-medium"
+    }
+  },
+  "spacing_and_layout": {
+    "generous_spacing": "Use p-8 to p-12 for major containers. Ensure containers with borders have internal padding.",
+    "bento_grid": "Marketing grids: grid-cols-1 md:grid-cols-8 lg:grid-cols-12 with gap-8. Dashboard grids: grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with gap-6.",
+    "alignment": "Mobile-first approach. Use optical alignment for items containing icons next to text."
+  },
+  "surface_strategies": {
+    "marketing_pages": "Use Crystal Glassmorphism (backdrop-blur-xl bg-white/70 or bg-black/60) for sticky elements. Use Tracing Beam effect for pricing tables.",
+    "dashboard_cards": "Use flat solid surfaces, 1px subtle border, and soft ambient hover shadows (-translate-y-1 on hover).",
+    "hover_states": "Always explicitly define hover text colors to prevent inheritance issues."
+  },
+  "motion_and_interactions": {
+    "hover": "Subtle -translate-y-1, increase contrast on focus.",
+    "animations": "Framer motion for staggered bento grid entrance and smooth transition effects.",
+    "scrolling": "Smooth momentum scrolling for the marketing landing page."
+  },
+  "components": {
+    "marketing": "Use pure HTML/Tailwind for complex layout structures and bento grids. Customize Shadcn for interactive pieces.",
+    "dashboard": "Heavily utilize Shadcn tables, charts, cards, and forms. Adapt them to fit the vibrant accent aesthetic.",
+    "icons": "Use lucide-react. Add @phosphor-icons/react if high-end duotone is needed for marketing sections."
+  },
+  "accessibility": {
+    "contrast": "Ensure 4.5:1 ratio for standard text. Utilize drop shadows when text overlaps complex images.",
+    "testing": "All interactive elements (buttons, links, inputs) MUST have a data-testid attribute using kebab-case role-based naming (e.g., data-testid='audit-form-submit')."
+  },
+  "image_urls": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1762278805026-9e0e673e5dc4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMGdsb3dpbmclMjBkYXRhJTIwbmV0d29yayUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3NjIzNDI2N3ww&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract glowing data streaks on dark background, ideal for the futuristic marketing hero."
+    },
+    "compliance_feature": {
+      "url": "https://images.unsplash.com/photo-1762951566390-e35eb7dfe9c5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NDh8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMG1vZGVybiUyMGdlb21ldHJpYyUyMHRlY2h8ZW58MHx8fHwxNzc2MjM0MzEwfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract geometric shape with neon glow to visually represent the AI audit process."
+    },
+    "dashboard_mockup": {
+      "url": "https://images.unsplash.com/photo-1574081105756-3c8d8ed70198?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwyfHxtaW5pbWFsaXN0JTIwZGFyayUyMG1vZGUlMjB3b3Jrc3BhY2V8ZW58MHx8fHwxNzc2MjM0MzEwfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Dark mode workspace image to frame or support dashboard section features."
+    },
+    "testimonial": {
+      "url": "https://images.unsplash.com/photo-1758518727984-17b37f2f0562?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHw0fHxpbmRpYW4lMjBidXNpbmVzcyUyMG1hbiUyMHN1aXQlMjBtb2Rlcm4lMjBvZmZpY2V8ZW58MHx8fHwxNzc2MjM0MjY3fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Portrait of an Indian financial professional for testimonials or use cases."
+    },
+    "company_logo_placeholder": {
+      "url": "https://images.pexels.com/photos/7004907/pexels-photo-7004907.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Clean minimal placeholder suitable for rendering partner or regulatory logos."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Install 'next-themes' or manually manage the Light/Dark/System state on the root element. Map the CSS variables to switch based on the .dark class.",
+    "Use .jsx / .js extensions for React components. Do NOT use .tsx.",
+    "Add font imports for Outfit (headings) and Manrope (body) via Google Fonts in index.css.",
+    "Integrate 'framer-motion' for complex animations on the marketing page, like hover effects and bento grid stagger entries.",
+    "For the Website Audit Tool, build a multi-step animated progress state before revealing the final score to simulate a deep scan.",
+    "Build the multi-step onboarding wizard using Shadcn forms, and persist data in state before submission.",
+    "All interactive elements MUST have a 'data-testid' attribute (e.g., data-testid='audit-submit-btn').",
+    "Never use placeholder image URLs (like via.placeholder). Always use the provided media URLs."
+  ]
+}
