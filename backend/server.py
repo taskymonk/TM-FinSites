@@ -18,7 +18,6 @@ import httpx
 from bs4 import BeautifulSoup
 
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Query, UploadFile, File
-from fastapi.responses import Response as FastResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
@@ -37,9 +36,12 @@ IS_PRODUCTION = os.environ.get("RENDER", "") == "true" or os.environ.get("PRODUC
 COOKIE_SECURE = IS_PRODUCTION
 COOKIE_SAMESITE = "none" if IS_PRODUCTION else "lax"
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+mongo_url = os.environ.get('MONGO_URL', '')
+if not mongo_url:
+    logger.error("MONGO_URL environment variable is not set!")
+db_name = os.environ.get('DB_NAME', 'finsites')
+client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=10000) if mongo_url else None
+db = client[db_name] if client else None
 
 app = FastAPI(title="FinSites API")
 api_router = APIRouter(prefix="/api")
@@ -820,6 +822,20 @@ async def serve_file(path: str):
     file_data, content_type = get_object(path)
     return Response(content=file_data, media_type=record.get("content_type", content_type), headers={"Cache-Control": "public, max-age=86400"})
 
+# ========== HEALTH CHECK ==========
+@api_router.get("/health")
+async def health_check():
+    status = {"api": "ok", "database": "unknown"}
+    try:
+        if db is not None:
+            await db.command("ping")
+            status["database"] = "ok"
+        else:
+            status["database"] = "not configured"
+    except Exception as e:
+        status["database"] = f"error: {str(e)}"
+    return status
+
 # ========== INCLUDE ROUTER ==========
 app.include_router(api_router)
 
@@ -873,19 +889,30 @@ async def create_indexes():
 
 @app.on_event("startup")
 async def startup():
-    await create_indexes()
-    await seed_admin()
-    await seed_plans()
+    try:
+        if db is not None:
+            await create_indexes()
+            await seed_admin()
+            await seed_plans()
+            logger.info("Database initialized successfully")
+        else:
+            logger.error("Database not connected - check MONGO_URL")
+    except Exception as e:
+        logger.error(f"Database startup error: {e}")
     try:
         init_storage()
         logger.info("Object storage initialized")
     except Exception as e:
         logger.warning(f"Storage init deferred: {e}")
-    cred_path = Path("/app/memory/test_credentials.md")
-    cred_path.parent.mkdir(parents=True, exist_ok=True)
-    cred_path.write_text(f"# Test Credentials\n\n## Admin\n- Email: {os.environ.get('ADMIN_EMAIL', 'admin@finsites.in')}\n- Password: {os.environ.get('ADMIN_PASSWORD', 'admin123')}\n- Role: admin\n\n## Auth Endpoints\n- POST /api/auth/login\n- GET /api/auth/me\n- POST /api/auth/logout\n")
-    logger.info("FinSites API started successfully")
+    try:
+        cred_path = Path("/app/memory/test_credentials.md")
+        cred_path.parent.mkdir(parents=True, exist_ok=True)
+        cred_path.write_text(f"# Test Credentials\n\n## Admin\n- Email: {os.environ.get('ADMIN_EMAIL', 'admin@finsites.in')}\n- Password: {os.environ.get('ADMIN_PASSWORD', 'admin123')}\n")
+    except Exception:
+        pass
+    logger.info("FinSites API started")
 
 @app.on_event("shutdown")
 async def shutdown():
-    client.close()
+    if client:
+        client.close()
