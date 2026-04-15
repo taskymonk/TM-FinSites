@@ -1,34 +1,83 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* ========== ANIMATIONS ========== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+@keyframes scan-line {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-delay { animation: float 6s ease-in-out infinite 2s; }
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-scan-line { animation: scan-line 2s linear infinite; }
+.animate-gradient { animation: gradient-shift 8s ease infinite; background-size: 200% 200%; }
+.animate-fade-up { animation: fade-up 0.6s ease-out forwards; }
+.animate-spin-slow { animation: spin-slow 20s linear infinite; }
+
+/* Staggered fade-up animations */
+.stagger-1 { animation-delay: 0.1s; opacity: 0; }
+.stagger-2 { animation-delay: 0.2s; opacity: 0; }
+.stagger-3 { animation-delay: 0.3s; opacity: 0; }
+.stagger-4 { animation-delay: 0.4s; opacity: 0; }
+.stagger-5 { animation-delay: 0.5s; opacity: 0; }
+.stagger-6 { animation-delay: 0.6s; opacity: 0; }
+
+/* Hero mesh background */
+.hero-mesh {
+  background:
+    radial-gradient(ellipse at 20% 50%, hsl(186 100% 50% / 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, hsl(151 100% 45% / 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, hsl(220 100% 50% / 0.04) 0%, transparent 50%);
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.dark .hero-mesh {
+  background:
+    radial-gradient(ellipse at 20% 50%, hsl(186 100% 50% / 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, hsl(151 100% 45% / 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, hsl(280 65% 60% / 0.06) 0%, transparent 50%);
 }
 
-.App-link {
-    color: #61dafb;
+/* Grid pattern */
+.grid-pattern {
+  background-image:
+    linear-gradient(hsl(var(--border) / 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--border) / 0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Score circle */
+.score-circle {
+  stroke-dasharray: 283;
+  stroke-dashoffset: 283;
+  transition: stroke-dashoffset 1.5s ease-out;
+}
+
+/* Noise texture overlay */
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
 }

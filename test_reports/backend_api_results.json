@@ -1,0 +1,225 @@
+{
+  "summary": {
+    "total_tests": 20,
+    "passed_tests": 20,
+    "success_rate": "100.0%",
+    "timestamp": "2026-04-15T06:52:48.469426"
+  },
+  "detailed_results": [
+    {
+      "test": "Admin Login",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:47.735406",
+      "response_keys": [
+        "id",
+        "email",
+        "name",
+        "role"
+      ]
+    },
+    {
+      "test": "Admin Role Verification",
+      "success": true,
+      "details": "Admin role confirmed",
+      "timestamp": "2026-04-15T06:52:47.735438"
+    },
+    {
+      "test": "Get Current User",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:47.781196",
+      "response_keys": [
+        "id",
+        "email",
+        "name",
+        "role"
+      ]
+    },
+    {
+      "test": "Get Plans",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:47.828763"
+    },
+    {
+      "test": "Plans Structure",
+      "success": true,
+      "details": "Found all 3 plans: ['starter', 'professional', 'enterprise']",
+      "timestamp": "2026-04-15T06:52:47.828808"
+    },
+    {
+      "test": "Audit Scan",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:48.012168",
+      "response_keys": [
+        "audit_id",
+        "url",
+        "status",
+        "detected_business_types",
+        "detected_data",
+        "compliance_report",
+        "created_at"
+      ]
+    },
+    {
+      "test": "Audit ID Generation",
+      "success": true,
+      "details": "Generated audit_id: a5313c8b-de41-433e-b113-ba78c5f37830",
+      "timestamp": "2026-04-15T06:52:48.012206"
+    },
+    {
+      "test": "Get Audit Result",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:48.057154",
+      "response_keys": [
+        "audit_id",
+        "url",
+        "status",
+        "detected_business_types",
+        "detected_data",
+        "compliance_report",
+        "created_at"
+      ]
+    },
+    {
+      "test": "Start Wizard",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:48.104019",
+      "response_keys": [
+        "session_id",
+        "audit_id",
+        "plan_id",
+        "contact",
+        "current_step",
+        "status",
+        "business_types",
+        "data",
+        "prefilled_from_audit",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    {
+      "test": "Session ID Generation",
+      "success": true,
+      "details": "Generated session_id: d31b4360-2759-46bc-b258-e7a09a8acdac",
+      "timestamp": "2026-04-15T06:52:48.104054"
+    },
+    {
+      "test": "Get Wizard Session",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:48.147653",
+      "response_keys": [
+        "session_id",
+        "audit_id",
+        "plan_id",
+        "contact",
+        "current_step",
+        "status",
+        "business_types",
+        "data",
+        "prefilled_from_audit",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    {
+      "test": "Save Wizard Step",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:48.192734",
+      "response_keys": [
+        "session_id",
+        "audit_id",
+        "plan_id",
+        "contact",
+        "current_step",
+        "status",
+        "business_types",
+        "data",
+        "prefilled_from_audit",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    {
+      "test": "Enterprise Contact",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:48.237820",
+      "response_keys": [
+        "contact_id",
+        "message"
+      ]
+    },
+    {
+      "test": "Enterprise Contact ID",
+      "success": true,
+      "details": "Generated contact_id: 3c986f36-9dd0-4e07-84f4-460e00603bb5",
+      "timestamp": "2026-04-15T06:52:48.237859"
+    },
+    {
+      "test": "Admin Stats",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:48.287409",
+      "response_keys": [
+        "total_submissions",
+        "by_status",
+        "by_type",
+        "total_audits",
+        "enterprise_leads"
+      ]
+    },
+    {
+      "test": "Admin Stats Structure",
+      "success": true,
+      "details": "All required keys present",
+      "timestamp": "2026-04-15T06:52:48.287448"
+    },
+    {
+      "test": "Admin Submissions List",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2026-04-15T06:52:48.332770",
+      "response_keys": [
+        "submissions",
+        "total",
+        "page",
+        "pages"
+      ]
+    },
+    {
+      "test": "Invalid Login",
+      "success": true,
+      "details": "Status: 401",
+      "timestamp": "2026-04-15T06:52:48.379111",
+      "response_keys": [
+        "detail"
+      ]
+    },
+    {
+      "test": "Non-existent Audit",
+      "success": true,
+      "details": "Status: 404",
+      "timestamp": "2026-04-15T06:52:48.423172",
+      "response_keys": [
+        "detail"
+      ]
+    },
+    {
+      "test": "Non-existent Wizard",
+      "success": true,
+      "details": "Status: 404",
+      "timestamp": "2026-04-15T06:52:48.469268",
+      "response_keys": [
+        "detail"
+      ]
+    }
+  ]
+}
