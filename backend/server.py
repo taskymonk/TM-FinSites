@@ -8,20 +8,26 @@ import os
 import re
 import uuid
 import logging
-import secrets
+import sys
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 
-import bcrypt
-import jwt
-import httpx
-from bs4 import BeautifulSoup
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Query, UploadFile, File
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-from bson import ObjectId
-from pydantic import BaseModel, Field
+try:
+    import bcrypt
+    import jwt
+    import httpx
+    from bs4 import BeautifulSoup
+    from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Query, UploadFile, File
+    from starlette.middleware.cors import CORSMiddleware
+    from motor.motor_asyncio import AsyncIOMotorClient
+    from bson import ObjectId
+    from pydantic import BaseModel, Field
+except ImportError as e:
+    logger.error(f"Failed to import required module: {e}")
+    sys.exit(1)
 
 # ========== CONFIG ==========
 JWT_ALGORITHM = "HS256"
