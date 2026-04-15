@@ -9,7 +9,6 @@ from urllib.parse import urlparse, parse_qs
 
 import requests as http
 import jwt
-import bcrypt
 from bs4 import BeautifulSoup
 
 # ==================== CONFIG ====================
