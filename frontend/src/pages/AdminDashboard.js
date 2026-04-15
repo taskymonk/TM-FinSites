@@ -43,7 +43,8 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => { fetchStats(); }, []);
-  useEffect(() => { fetchSubmissions(); }, [page, filters]);
+  useEffect(() => { fetchSubmissions(); // eslint-disable-next-line
+  }, [page, filters]);
 
   const handleLogout = async () => { await logout(); navigate("/admin/login"); };
 
@@ -59,7 +60,7 @@ export default function AdminDashboard() {
           </Link>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
-            <Button variant="ghost" size="sm" onClick={handleLogout} data-testid="admin-logout"><LogOut className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="relative z-10" data-testid="admin-logout"><LogOut className="w-4 h-4" /></Button>
           </div>
         </div>
       </div>
