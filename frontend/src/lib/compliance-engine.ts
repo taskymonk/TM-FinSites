@@ -403,3 +403,74 @@ export function runAudit(url: string, html: string): AuditResult {
     scanned_at: new Date().toISOString(),
   }
 }
+
+export function runAuditWithTypes(url: string, html: string, overrideTypes: string[]): AuditResult {
+  const $ = cheerio.load(html)
+  const text = $("body").text().replace(/\s+/g, " ").trim()
+  const title = $("title").text().trim()
+  const links = $("a").map((_, el) => $(el).attr("href") || "").get()
+  const meta: Record<string, string> = {}
+  $("meta").each((_, el) => {
+    const name = $(el).attr("name") || $(el).attr("property") || ""
+    const content = $(el).attr("content") || ""
+    if (name) meta[name] = content
+  })
+
+  const ctx: AuditContext = { url, html, text, $, links, title, meta }
+  const activeTypes = overrideTypes
+
+  const results: RuleCheckResult[] = []
+  const categories: Record<string, CategoryResult> = {}
+
+  for (const rule of COMPLIANCE_RULES) {
+    const isRelevant = rule.businessTypes.some((bt) => activeTypes.includes(bt)) || activeTypes.length === 0
+    if (!isRelevant) continue
+
+    const result = rule.check(ctx)
+    results.push({
+      rule_id: rule.id,
+      name: rule.name,
+      category: rule.category,
+      severity: rule.severity,
+      business_types: rule.businessTypes,
+      passed: result.passed,
+      details: result.details,
+    })
+
+    if (!categories[rule.category]) categories[rule.category] = { passed: 0, total: 0, score: 0 }
+    categories[rule.category].total++
+    if (result.passed) categories[rule.category].passed++
+  }
+
+  for (const cat of Object.values(categories)) {
+    cat.score = cat.total > 0 ? Math.round((cat.passed / cat.total) * 100) : 0
+  }
+
+  const totalRules = results.length
+  const passedRules = results.filter((r) => r.passed).length
+  const criticalFails = results.filter((r) => !r.passed && r.severity === "critical").length
+  const majorFails = results.filter((r) => !r.passed && r.severity === "major").length
+  const minorFails = results.filter((r) => !r.passed && r.severity === "minor").length
+
+  let score = totalRules > 0 ? Math.round((passedRules / totalRules) * 100) : 0
+  score = Math.max(0, score - criticalFails * 5)
+
+  const auditId = `aud_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+
+  return {
+    audit_id: auditId,
+    url,
+    status: "completed",
+    overall_score: score,
+    detected_business_types: activeTypes,
+    categories,
+    total_rules: totalRules,
+    passed_rules: passedRules,
+    failed_rules: totalRules - passedRules,
+    critical_failures: criticalFails,
+    major_failures: majorFails,
+    minor_failures: minorFails,
+    results,
+    scanned_at: new Date().toISOString(),
+  }
+}

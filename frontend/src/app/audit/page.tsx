@@ -9,10 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Scan, CheckCircle2, XCircle, AlertTriangle, Shield, Globe, ArrowRight, Loader2, Info } from "lucide-react"
+import { Scan, CheckCircle2, XCircle, AlertTriangle, Shield, Globe, ArrowRight, Loader2, Info, RefreshCw, Pencil } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
-import { runAudit as runAuditAction } from "@/lib/actions"
+import { runAudit as runAuditAction, runAuditWithTypes as runAuditWithTypesAction } from "@/lib/actions"
+
+const ALL_BIZ_TYPES = ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"]
 
 interface AuditResult {
   audit_id: string
@@ -35,20 +37,20 @@ interface AuditResult {
 }
 
 function ScoreRing({ score }: { score: number }) {
-  const color = score >= 80 ? "text-green-500" : score >= 50 ? "text-yellow-500" : "text-red-500"
+  const color = score >= 80 ? "text-green-400" : score >= 50 ? "text-yellow-400" : "text-red-400"
   const circumference = 2 * Math.PI * 54
   const offset = circumference - (score / 100) * circumference
   return (
     <div className="relative w-36 h-36 mx-auto">
       <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-        <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" strokeWidth="8" className="text-muted/30" />
+        <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" strokeWidth="8" className="text-border" />
         <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" strokeWidth="8" className={color}
           strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
           style={{ transition: "stroke-dashoffset 1.5s ease-out" }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={`text-3xl font-black ${color}`}>{score}</span>
-        <span className="text-xs text-muted-foreground">/ 100</span>
+        <span className="text-xs text-muted-foreground font-medium">/ 100</span>
       </div>
     </div>
   )
@@ -56,9 +58,9 @@ function ScoreRing({ score }: { score: number }) {
 
 function SeverityBadge({ severity }: { severity: string }) {
   const map: Record<string, { cls: string; label: string }> = {
-    critical: { cls: "bg-red-500/15 text-red-500 border-red-500/30", label: "Critical" },
-    major: { cls: "bg-yellow-500/15 text-yellow-500 border-yellow-500/30", label: "Major" },
-    minor: { cls: "bg-blue-500/15 text-blue-500 border-blue-500/30", label: "Minor" },
+    critical: { cls: "bg-red-500/20 text-red-400 border-red-500/40", label: "Critical" },
+    major: { cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40", label: "Major" },
+    minor: { cls: "bg-blue-500/20 text-blue-400 border-blue-500/40", label: "Minor" },
   }
   const s = map[severity] || map.minor
   return <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${s.cls}`}>{s.label}</Badge>
@@ -71,6 +73,9 @@ export default function AuditPage() {
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState<AuditResult | null>(null)
   const [error, setError] = useState("")
+  const [editingTypes, setEditingTypes] = useState(false)
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
+  const [rescanning, setRescanning] = useState(false)
 
   useEffect(() => {
     const urlParam = searchParams.get("url")
@@ -87,6 +92,7 @@ export default function AuditPage() {
     setScanning(true)
     setError("")
     setResult(null)
+    setEditingTypes(false)
     setProgress(0)
 
     const progressTimer = setInterval(() => {
@@ -96,13 +102,14 @@ export default function AuditPage() {
     try {
       const data = await runAuditAction(scanUrl)
       clearInterval(progressTimer)
-
       if ("error" in data) {
         setError(data.error as string)
         setProgress(0)
       } else {
         setProgress(100)
-        setTimeout(() => setResult(data as AuditResult), 400)
+        const auditResult = data as AuditResult
+        setSelectedTypes(auditResult.detected_business_types)
+        setTimeout(() => setResult(auditResult), 400)
       }
     } catch {
       clearInterval(progressTimer)
@@ -110,6 +117,30 @@ export default function AuditPage() {
       setProgress(0)
     } finally {
       setScanning(false)
+    }
+  }
+
+  function toggleType(type: string) {
+    setSelectedTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    )
+  }
+
+  async function rescanWithTypes() {
+    if (selectedTypes.length === 0 || !url.trim()) return
+    setRescanning(true)
+    try {
+      const data = await runAuditWithTypesAction(url.trim(), selectedTypes)
+      if ("error" in data) {
+        setError(data.error as string)
+      } else {
+        setResult(data as AuditResult)
+        setEditingTypes(false)
+      }
+    } catch {
+      setError("Rescan failed. Please try again.")
+    } finally {
+      setRescanning(false)
     }
   }
 
@@ -123,7 +154,7 @@ export default function AuditPage() {
         {/* Input Section */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border/60 bg-card/30 text-xs font-medium text-muted-foreground mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border/60 bg-card/40 text-xs font-medium text-muted-foreground mb-4">
               <Shield className="w-3.5 h-3.5 text-primary" /> 148+ Compliance Checks
             </div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 font-[family-name:var(--font-heading)]" data-testid="audit-title">
@@ -135,13 +166,12 @@ export default function AuditPage() {
           <form onSubmit={(e) => { e.preventDefault(); startAudit() }}
             className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto" data-testid="audit-form">
             <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://yourwebsite.com"
-              className="flex-1 h-12 text-base" disabled={scanning} data-testid="audit-url-input" />
+              className="flex-1 h-12 text-base bg-card" disabled={scanning} data-testid="audit-url-input" />
             <Button type="submit" size="lg" disabled={scanning || !url.trim()} className="gap-2 font-semibold whitespace-nowrap" data-testid="audit-submit-btn">
               {scanning ? <><Loader2 className="w-4 h-4 animate-spin" /> Scanning...</> : <><Scan className="w-4 h-4" /> Scan Now</>}
             </Button>
           </form>
 
-          {/* Progress Bar */}
           <AnimatePresence>
             {scanning && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-6 max-w-xl mx-auto">
@@ -157,7 +187,7 @@ export default function AuditPage() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               className="mt-6 max-w-xl mx-auto p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-sm text-destructive flex items-start gap-3" data-testid="audit-error">
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-              <div><p className="font-medium">Scan Failed</p><p className="text-destructive/80 mt-1">{error}</p></div>
+              <div><p className="font-medium">Scan Failed</p><p className="opacity-80 mt-1">{error}</p></div>
             </motion.div>
           )}
         </section>
@@ -168,12 +198,12 @@ export default function AuditPage() {
             <motion.section initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16" data-testid="audit-results">
 
-              {/* Score Overview */}
+              {/* Score + Summary */}
               <div className="grid md:grid-cols-3 gap-6 mb-8">
                 <Card className="md:col-span-1 glass" data-testid="audit-score-card">
                   <CardContent className="pt-6 text-center">
                     <ScoreRing score={result.overall_score} />
-                    <h3 className="font-bold text-lg mt-4">Compliance Score</h3>
+                    <h3 className="font-bold text-lg mt-4 text-foreground">Compliance Score</h3>
                     <p className="text-sm text-muted-foreground mt-1">
                       {result.overall_score >= 80 ? "Good standing" : result.overall_score >= 50 ? "Needs improvement" : "Significant issues found"}
                     </p>
@@ -185,49 +215,84 @@ export default function AuditPage() {
                 </Card>
 
                 <Card className="md:col-span-2 glass">
-                  <CardHeader><CardTitle className="text-base">Summary</CardTitle></CardHeader>
+                  <CardHeader><CardTitle className="text-base text-foreground">Summary</CardTitle></CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
-                      <div className="text-center p-3 rounded-xl bg-green-500/10">
-                        <div className="text-2xl font-black text-green-500">{result.passed_rules}</div>
-                        <div className="text-xs text-muted-foreground">Passed</div>
-                      </div>
-                      <div className="text-center p-3 rounded-xl bg-red-500/10">
-                        <div className="text-2xl font-black text-red-500">{result.critical_failures}</div>
-                        <div className="text-xs text-muted-foreground">Critical</div>
-                      </div>
-                      <div className="text-center p-3 rounded-xl bg-yellow-500/10">
-                        <div className="text-2xl font-black text-yellow-500">{result.major_failures}</div>
-                        <div className="text-xs text-muted-foreground">Major</div>
-                      </div>
-                      <div className="text-center p-3 rounded-xl bg-blue-500/10">
-                        <div className="text-2xl font-black text-blue-500">{result.minor_failures}</div>
-                        <div className="text-xs text-muted-foreground">Minor</div>
-                      </div>
+                      {[
+                        { label: "Passed", value: result.passed_rules, bg: "bg-green-500/15", text: "text-green-400" },
+                        { label: "Critical", value: result.critical_failures, bg: "bg-red-500/15", text: "text-red-400" },
+                        { label: "Major", value: result.major_failures, bg: "bg-yellow-500/15", text: "text-yellow-400" },
+                        { label: "Minor", value: result.minor_failures, bg: "bg-blue-500/15", text: "text-blue-400" },
+                      ].map((s) => (
+                        <div key={s.label} className={`text-center p-3 rounded-xl ${s.bg} border border-current/5`}>
+                          <div className={`text-2xl font-black ${s.text}`}>{s.value}</div>
+                          <div className={`text-xs font-semibold mt-0.5 ${s.text} opacity-80`}>{s.label}</div>
+                        </div>
+                      ))}
                     </div>
 
-                    {result.detected_business_types.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Detected:</span>
-                        {result.detected_business_types.map((bt) => (
-                          <Badge key={bt} variant="outline" className="text-xs bg-primary/10 border-primary/30 text-primary">{bt}</Badge>
-                        ))}
+                    {/* Editable Business Types */}
+                    <div className="pt-3 border-t border-border/50" data-testid="detected-types-section">
+                      <div className="flex items-center justify-between mb-2.5">
+                        <span className="text-xs font-medium text-foreground">Detected Business Types</span>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                          onClick={() => setEditingTypes(!editingTypes)} data-testid="edit-types-btn">
+                          <Pencil className="w-3 h-3" /> {editingTypes ? "Cancel" : "Edit"}
+                        </Button>
                       </div>
-                    )}
+
+                      {!editingTypes ? (
+                        <div className="flex flex-wrap gap-2">
+                          {result.detected_business_types.map((bt) => (
+                            <Badge key={bt} className="text-xs bg-primary/15 border-primary/40 text-primary font-medium" data-testid={`detected-badge-${bt}`}>{bt}</Badge>
+                          ))}
+                          {result.detected_business_types.length === 0 && (
+                            <span className="text-xs text-muted-foreground">No specific type detected</span>
+                          )}
+                        </div>
+                      ) : (
+                        <div data-testid="type-editor">
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {ALL_BIZ_TYPES.map((bt) => {
+                              const active = selectedTypes.includes(bt)
+                              return (
+                                <button key={bt} onClick={() => toggleType(bt)}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                                    active
+                                      ? "bg-primary/20 border-primary/50 text-primary"
+                                      : "bg-secondary/60 border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                                  }`}
+                                  data-testid={`type-toggle-${bt}`}>
+                                  {active && <CheckCircle2 className="w-3 h-3 inline mr-1" />}{bt}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" onClick={rescanWithTypes} disabled={rescanning || selectedTypes.length === 0}
+                              className="gap-1.5 text-xs h-8" data-testid="rescan-btn">
+                              {rescanning ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                              Rescan with Updated Types
+                            </Button>
+                            <span className="text-[10px] text-muted-foreground">{selectedTypes.length} selected</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Category Breakdown */}
               <Card className="glass mb-8" data-testid="audit-categories">
-                <CardHeader><CardTitle className="text-base">Category Breakdown</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-base text-foreground">Category Breakdown</CardTitle></CardHeader>
                 <CardContent>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {Object.entries(result.categories).map(([cat, data]) => (
-                      <div key={cat} className="p-4 rounded-xl bg-secondary/50">
+                      <div key={cat} className="p-4 rounded-xl bg-secondary/60 border border-border/30">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium truncate mr-2">{cat}</span>
-                          <span className={`text-sm font-bold ${data.score >= 80 ? "text-green-500" : data.score >= 50 ? "text-yellow-500" : "text-red-500"}`}>{data.score}%</span>
+                          <span className="text-sm font-medium text-foreground truncate mr-2">{cat}</span>
+                          <span className={`text-sm font-bold ${data.score >= 80 ? "text-green-400" : data.score >= 50 ? "text-yellow-400" : "text-red-400"}`}>{data.score}%</span>
                         </div>
                         <Progress value={data.score} className="h-1.5" />
                         <p className="text-xs text-muted-foreground mt-1.5">{data.passed}/{data.total} checks passed</p>
@@ -239,7 +304,7 @@ export default function AuditPage() {
 
               {/* Detailed Results */}
               <Card className="glass" data-testid="audit-details">
-                <CardHeader><CardTitle className="text-base">Detailed Results</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-base text-foreground">Detailed Results</CardTitle></CardHeader>
                 <CardContent>
                   <Tabs defaultValue="failed">
                     <TabsList className="mb-4" data-testid="audit-tabs">
@@ -263,11 +328,11 @@ export default function AuditPage() {
                               {tab === "failed" ? "No failures found!" : "No results"}
                             </p>
                           ) : items.map((r, i) => (
-                            <div key={i} className={`flex items-start gap-3 p-3 rounded-lg ${r.passed ? "bg-green-500/5" : "bg-red-500/5"}`}>
-                              {r.passed ? <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />}
+                            <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border ${r.passed ? "bg-green-500/5 border-green-500/10" : "bg-red-500/5 border-red-500/10"}`}>
+                              {r.passed ? <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-sm font-medium">{r.name}</span>
+                                  <span className="text-sm font-medium text-foreground">{r.name}</span>
                                   <SeverityBadge severity={r.severity} />
                                   <span className="text-[10px] text-muted-foreground font-mono">{r.rule_id}</span>
                                 </div>

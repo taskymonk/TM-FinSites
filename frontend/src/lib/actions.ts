@@ -1,7 +1,7 @@
 "use server"
 
 import { createServerClient } from "@/lib/supabase/server"
-import { runAudit as runComplianceAudit } from "@/lib/compliance-engine"
+import { runAudit as runComplianceAudit, runAuditWithTypes as runComplianceAuditWithTypes } from "@/lib/compliance-engine"
 
 const FALLBACK_PLANS = [
   {
@@ -77,6 +77,57 @@ export async function fetchPlans() {
   } catch {
     return FALLBACK_PLANS
   }
+}
+
+export async function runAuditWithTypes(url: string, businessTypes: string[]) {
+  if (!url || typeof url !== "string") {
+    return { error: "URL is required" }
+  }
+
+  let targetUrl = url.trim()
+  if (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
+    targetUrl = "https://" + targetUrl
+  }
+
+  try {
+    new URL(targetUrl)
+  } catch {
+    return { error: "Invalid URL format" }
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15000)
+
+  let html: string
+  try {
+    const response = await fetch(targetUrl, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      redirect: "follow",
+    })
+    clearTimeout(timeout)
+
+    if (!response.ok) {
+      return { error: `Website returned status ${response.status}` }
+    }
+
+    html = await response.text()
+  } catch (fetchErr) {
+    clearTimeout(timeout)
+    const msg = fetchErr instanceof Error ? fetchErr.message : "Unknown error"
+    if (msg.includes("abort")) {
+      return { error: "Website took too long to respond (15s timeout)" }
+    }
+    return { error: `Could not reach website: ${msg}` }
+  }
+
+  const result = runComplianceAuditWithTypes(targetUrl, html, businessTypes)
+  return result
 }
 
 export async function runAudit(url: string) {

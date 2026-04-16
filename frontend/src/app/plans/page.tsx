@@ -92,14 +92,14 @@ export default function PlansPage() {
                       </div>
                     )}
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-xl font-[family-name:var(--font-heading)]">{plan.name}</CardTitle>
+                      <CardTitle className="text-xl font-[family-name:var(--font-heading)] text-foreground">{plan.name}</CardTitle>
                       <p className="text-2xl font-black text-gradient font-[family-name:var(--font-heading)]">{plan.price_display}</p>
                       <p className="text-sm text-muted-foreground">{plan.description}</p>
                     </CardHeader>
                     <CardContent className="flex flex-col h-full">
                       <ul className="space-y-2.5 mb-8 flex-1">
                         {(plan.features || []).map((f, j) => (
-                          <li key={j} className="flex items-start gap-2 text-sm">
+                          <li key={j} className="flex items-start gap-2 text-sm text-foreground/90">
                             <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                             <span>{f}</span>
                           </li>

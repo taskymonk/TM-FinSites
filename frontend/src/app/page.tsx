@@ -115,7 +115,7 @@ export default function LandingPage() {
               { num: 25, suffix: "L+", label: "in potential penalties for non-compliant disclosures", prefix: "INR " },
               { num: 90, suffix: "%", label: "of prospects check your website before engaging" }
             ].map((s, i) => (
-              <motion.div key={i} variants={fadeUp} className="text-center p-8 rounded-2xl glass glow-primary hover:-translate-y-1 transition-transform">
+              <motion.div key={i} variants={fadeUp} className="text-center p-8 rounded-2xl glass hover:-translate-y-1 transition-transform">
                 <div className="text-4xl sm:text-5xl font-black text-gradient mb-2 font-[family-name:var(--font-heading)]">
                   {s.prefix || ""}<Counter target={s.num} suffix={s.suffix} />
                 </div>
