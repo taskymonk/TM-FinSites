@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Input } from "@/components/ui/input"
 import { Shield, BarChart3, Scan, Layers, Users, Zap, ArrowRight, CheckCircle2, ChevronRight, TrendingUp, FileCheck, Palette, Globe } from "lucide-react"
+import { fetchPlans } from "@/lib/actions"
 
 const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }
 const stagger = { visible: { transition: { staggerChildren: 0.1 } } }
@@ -65,7 +66,7 @@ export default function LandingPage() {
   const [auditUrl, setAuditUrl] = useState("")
   const [plans, setPlans] = useState<Array<{ plan_id: string; name: string; price_display: string; description: string; features: string[]; is_popular: boolean; is_contact_us: boolean }>>([])
 
-  useEffect(() => { fetch("/api/plans").then(r => r.json()).then(setPlans).catch(() => {}) }, [])
+  useEffect(() => { fetchPlans().then(setPlans).catch(() => {}) }, [])
 
   return (
     <div className="min-h-screen">
@@ -246,7 +247,7 @@ export default function LandingPage() {
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-[family-name:var(--font-heading)]">Frequently Asked Questions</h2>
           </motion.div>
           <motion.div variants={fadeUp}>
-            <Accordion type="single" collapsible className="space-y-3" data-testid="faq-accordion">
+            <Accordion className="space-y-3" data-testid="faq-accordion">
               {FAQ.map((item, i) => (
                 <AccordionItem key={i} value={`item-${i}`} className="glass rounded-xl px-6 border-0">
                   <AccordionTrigger className="text-left font-medium text-sm hover:no-underline py-4">{item.q}</AccordionTrigger>
