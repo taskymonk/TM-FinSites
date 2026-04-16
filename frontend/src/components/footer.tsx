@@ -3,7 +3,7 @@ import { Shield } from "lucide-react"
 
 export function Footer() {
   return (
-    <footer data-testid="main-footer" className="border-t border-border bg-card/50">
+    <footer data-testid="main-footer" className="border-t border-border bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">

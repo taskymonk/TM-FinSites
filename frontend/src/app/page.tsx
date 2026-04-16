@@ -127,7 +127,7 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" className="py-20 lg:py-28 bg-secondary/30">
+      <section id="features" className="py-20 lg:py-28">
         <AnimSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div variants={fadeUp} className="text-center mb-14">
             <p className="text-sm uppercase tracking-[0.2em] font-medium text-primary mb-3">Platform Capabilities</p>
@@ -170,7 +170,7 @@ export default function LandingPage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="py-20 lg:py-28 bg-secondary/30">
+      <section id="how-it-works" className="py-20 lg:py-28">
         <AnimSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div variants={fadeUp} className="text-center mb-14">
             <p className="text-sm uppercase tracking-[0.2em] font-medium text-primary mb-3">Simple Process</p>
@@ -210,7 +210,7 @@ export default function LandingPage() {
       </section>
 
       {/* PRICING */}
-      <section id="pricing" className="py-20 lg:py-28 bg-secondary/30">
+      <section id="pricing" className="py-20 lg:py-28">
         <AnimSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div variants={fadeUp} className="text-center mb-14">
             <p className="text-sm uppercase tracking-[0.2em] font-medium text-primary mb-3">Pricing</p>
@@ -260,7 +260,7 @@ export default function LandingPage() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="py-20 lg:py-28 bg-secondary/30">
+      <section className="py-20 lg:py-28">
         <AnimSection className="max-w-3xl mx-auto px-4 text-center">
           <motion.div variants={fadeUp}>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-4 font-[family-name:var(--font-heading)]">Ready to Go Compliant?</h2>
