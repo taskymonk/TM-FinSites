@@ -1,70 +1,75 @@
-# FinSites Platform — PRD
+# FinSites Platform — PRD (V6 Rewrite)
 
 ## Problem Statement
-Build a marketing platform called FinSites for building compliant websites for Indian financial professionals (MFD, Insurance, PMS, AIF, SIF, RIA). Features: marketing landing page, website compliance audit tool, plan selection, multi-step onboarding wizard, admin dashboard, client status tracking. Futuristic dark theme with Light/Dark/System toggle.
+Build a marketing platform called FinSites for building compliant websites for Indian financial professionals (MFD, Insurance, PMS, RIA, Stock Broker, SIF, NPS). Features: marketing landing page, website compliance audit tool (148+ rules), plan selection, multi-step onboarding wizard, admin dashboard, dynamic LLM integration for PRD generation.
 
-## Architecture
-- Frontend: React + Tailwind + Shadcn/UI + Framer Motion
-- Backend: FastAPI + MongoDB
-- Auth: JWT with httpOnly cookies (admin only)
-- Audit Engine: BeautifulSoup + httpx (web scraping, regex-based compliance detection)
-- No LLM — structured wizard with predefined flows
+## Architecture (V6)
+- **Frontend & Backend (Unified)**: Next.js 15 (App Router), React 19, TypeScript
+- **Styling**: Tailwind CSS v4, shadcn/ui (base-ui), Framer Motion
+- **Database & Auth**: Supabase (PostgreSQL) — schema at `/app/supabase_schema.sql`
+- **Data Fetching**: Server Actions (NOT /api routes — K8s ingress routes /api to old Python backend)
+- **Compliance Engine**: Cheerio-based HTML parsing with regex rule matching
+- **Deployment**: Next.js dev on port 3000 via supervisor
 
 ## User Personas
-1. **Financial Professional (Client)**: MFD/Insurance/PMS/AIF/SIF/RIA professional needing a compliant website
-2. **Admin**: FinSites team managing submissions, updating statuses, configuring plans
+1. **Financial Professional (Client)**: MFD/Insurance/PMS/RIA/Stock Broker/SIF/NPS professional needing a compliant website
+2. **Admin**: FinSites team managing submissions, updating statuses
 3. **Prospect**: Visitor exploring the platform, running free audits
 
 ## Core Requirements
-- Marketing landing page showcasing the platform
-- Website audit tool scanning for SEBI/AMFI/IRDAI compliance (40+ checks)
-- Plan selection (Starter/Professional/Enterprise) — commitment, not payment
-- 5-step onboarding wizard (Business Type → Registration Details → Services → Design → Review)
-- Admin dashboard (stats, submissions, status management, payment tracking)
-- Public status tracking page
+- Marketing landing page showcasing the platform (7 sections)
+- Website audit tool scanning for SEBI/AMFI/IRDAI/PFRDA compliance (28+ rules, 7 categories)
+- Plan selection (Starter/Professional/Enterprise)
+- Multi-step onboarding wizard (future)
+- Admin dashboard (future)
 - Light/Dark/System theme toggle
 
-## What's Been Implemented (April 2026)
-- [x] Full backend API (auth, audit, wizard, admin, plans, status, enterprise contact)
-- [x] Marketing landing page (hero, problem stats, features, business types, how-it-works, pricing, FAQ, CTAs)
-- [x] Website audit tool (URL scanning, compliance scoring, business type detection)
-- [x] Plan selection page (3 tiers, contact modal, enterprise inquiry form)
-- [x] 5-step onboarding wizard with dynamic forms per business type (Groups A-G)
-- [x] Admin dashboard (stats cards, submissions table, filters, search, pagination)
-- [x] Admin submission detail (tabbed view, status management, payment recording)
-- [x] Confirmation page with reference number and "what happens next"
-- [x] Status tracking page with pipeline visualization
-- [x] Light/Dark/System theme toggle
-- [x] Admin seeding, plan seeding, MongoDB indexes
-- [x] JWT authentication with httpOnly cookies
+## What's Been Implemented (April 16, 2026 — V6 Session 1)
+- [x] Next.js 15 App Router project initialized with Tailwind v4, shadcn/ui
+- [x] Supabase client utilities (browser + server)
+- [x] Supabase schema SQL generated (`/app/supabase_schema.sql`)
+- [x] Custom theme with oklch colors (dark/light), glass-morphism effects
+- [x] Navbar with scroll navigation, mobile menu, theme toggle
+- [x] Footer with product/company/legal links
+- [x] Landing page: Hero, Problem Stats, Features (6), Business Types (7), How-It-Works (3 steps), Pricing (3 plans), FAQ (6 items), CTAs
+- [x] Free Compliance Audit page: URL input, real-time scanning via server action, score ring, summary cards, category breakdown, detailed results with tabs (Failed/Passed/All), severity badges
+- [x] Compliance Engine: 28 rules across 7 categories (Registration, Disclaimers, Contact, Privacy, Technical, Content Quality, PMS/SIF/Stock Broker specifics)
+- [x] Plans page: 3 plan cards with features, enterprise contact dialog
+- [x] Server Actions for data fetching (fetchPlans, runAudit, submitEnterpriseContact)
+- [x] Fallback plan data when Supabase is not configured
+- [x] Next.js config with allowed origins for server actions
+
+## Pending: Supabase Schema Execution
+User needs to run `/app/supabase_schema.sql` in Supabase SQL Editor to create tables (plans, audits, compliance_rules, wizard_sessions, submissions, enterprise_contacts, admin_users).
 
 ## Prioritized Backlog
 ### P0 (Critical)
-- None — core MVP complete
+- Supabase schema execution by user
+- Onboarding Wizard V2 (multi-step data collection for 7 business types)
+- Compliance Engine V2 (expand to 148+ rules)
+- Admin authentication (Supabase Auth)
 
 ### P1 (High)
-- Email notifications (submission confirmation, status updates, payment reminders)
+- Marketing sub-pages per business type (/solutions/mfd, /solutions/ria, etc.)
+- Admin dashboard (submissions, status management)
+- Dynamic LLM selection for PRD prompt generation
 - PDF export for audit reports
-- Abandoned lead tracking (users who start but don't finish wizard)
-- Data validation improvements (registration number format checks on frontend)
 
 ### P2 (Medium)
-- Google Social Login (admin configurable)
-- Multi-admin support with roles
-- Export submissions to CSV/Excel
-- Bulk status updates
-- Analytics dashboard (conversion funnel, audit-to-submission rates)
+- Email notifications
+- Abandoned lead tracking
+- Multi-admin support
+- Analytics dashboard
 
 ### P3 (Nice to Have)
 - LLM-powered conversational wizard mode
 - Re-scan audit capability
-- Client portal for managing their own submission
-- Webhook notifications for status changes
+- Client portal
 - Multi-language support
 
 ## Next Tasks
-1. Add email notification system (SendGrid/Resend)
-2. Implement abandoned lead capture from plan selection dropoffs
-3. Add registration number format validation on frontend
-4. Build PDF export for audit reports
-5. Configure Google OAuth for admin (admin-configurable integrations panel)
+1. User to confirm Supabase schema execution
+2. Build Onboarding Wizard with Supabase session persistence
+3. Expand Compliance Engine to 148+ rules
+4. Add admin authentication
+5. Build admin dashboard
