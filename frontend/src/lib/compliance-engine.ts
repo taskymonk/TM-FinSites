@@ -246,7 +246,7 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
     businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
     check: (ctx) => {
       const hasTitle = ctx.title.length > 5
-      const hasDesc = ctx.$('meta[name="description"]').attr("content")?.length ?? 0 > 10
+      const hasDesc = (ctx.$('meta[name="description"]').attr("content")?.length ?? 0) > 10
       const passed = hasTitle && hasDesc
       return { passed, details: passed ? "Good title and meta description found" : `Missing: ${!hasTitle ? "page title" : ""}${!hasTitle && !hasDesc ? " and " : ""}${!hasDesc ? "meta description" : ""}` }
     },
