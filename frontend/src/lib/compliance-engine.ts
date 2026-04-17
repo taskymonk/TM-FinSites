@@ -470,7 +470,7 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
   { id: "ACC-004", name: "Heading Hierarchy", category: "Accessibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
     check: (ctx) => { const h1 = ctx.$("h1").length; return { passed: h1 >= 1 && h1 <= 2, details: h1 === 0 ? "No H1 heading — hurts SEO and accessibility" : h1 > 2 ? `${h1} H1 tags found — should have only 1` : "Proper H1 heading found" } } },
   { id: "ACC-005", name: "Contrast & Readability", category: "Accessibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
-    check: (ctx) => { const small = ctx.$('[style*="font-size"]').filter((_, el) => { const s = ctx.$(el).css("font-size"); return s && parseInt(s) < 10 }).length; return { passed: small === 0, details: small === 0 ? "No extremely small text found" : `${small} elements with very small font size found` } } },
+    check: (ctx) => { const small = ctx.$('[style*="font-size"]').filter((_, el) => { const s = ctx.$(el).css("font-size"); return !!(s && parseInt(s) < 10) }).length; return { passed: small === 0, details: small === 0 ? "No extremely small text found" : `${small} elements with very small font size found` } } },
 
   // SEO DEEP
   { id: "SEO-001", name: "Structured Data / Schema.org", category: "SEO & Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
@@ -534,7 +534,7 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
   { id: "SEC-001", name: "Content Security Policy", category: "Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
     check: (ctx) => { const has = ctx.$('meta[http-equiv="Content-Security-Policy"]').length > 0; return { passed: has, details: has ? "CSP meta tag found" : "No Content Security Policy — recommended for XSS protection" } } },
   { id: "SEC-002", name: "Mixed Content Check", category: "Security", severity: "major", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
-    check: (ctx) => { const httpSrcs = ctx.$('[src^="http://"]').length + ctx.$('[href^="http://"]').filter((_, el) => ctx.$(el).attr("href")?.endsWith(".css") || ctx.$(el).attr("href")?.endsWith(".js")).length; return { passed: httpSrcs === 0, details: httpSrcs === 0 ? "No mixed content (HTTP resources on HTTPS page)" : `${httpSrcs} insecure HTTP resources found on page` } } },
+    check: (ctx) => { const httpSrcs = ctx.$('[src^="http://"]').length + ctx.$('[href^="http://"]').filter((_, el) => !!(ctx.$(el).attr("href")?.endsWith(".css") || ctx.$(el).attr("href")?.endsWith(".js"))).length; return { passed: httpSrcs === 0, details: httpSrcs === 0 ? "No mixed content (HTTP resources on HTTPS page)" : `${httpSrcs} insecure HTTP resources found on page` } } },
   { id: "SEC-003", name: "External Link Safety", category: "Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
     check: (ctx) => { const ext = ctx.$('a[target="_blank"]').length; const safe = ctx.$('a[target="_blank"][rel*="noopener"]').length; if (ext === 0) return { passed: true, details: "No external links with target=_blank" }; return { passed: safe >= ext * 0.7, details: `${safe}/${ext} external links have rel="noopener" — ${safe >= ext * 0.7 ? "good" : "add noopener for security"}` } } },
 
