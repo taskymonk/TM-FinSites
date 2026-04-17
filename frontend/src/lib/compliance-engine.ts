@@ -331,6 +331,132 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
       return { passed: has, details: has ? "Investor charter reference found" : "Investor charter not linked — recommended by SEBI" }
     },
   },
+
+  // ============ EXPANDED RULES ============
+
+  // REGISTRATION EXPANDED
+  { id: "REG-006", name: "CIN / PAN Display", category: "Registration & Identity", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /\b(CIN|PAN)\s*:?\s*[A-Z0-9]{5,}/i.test(ctx.text); return { passed: has, details: has ? "CIN or PAN number found" : "CIN/PAN not displayed — recommended for trust" } } },
+  { id: "REG-007", name: "EUIN Display (MFD)", category: "Registration & Identity", severity: "major", businessTypes: ["MFD"],
+    check: (ctx) => { const has = /EUIN\s*[-:]?\s*[A-Z0-9]{5,}/i.test(ctx.text); return { passed: has, details: has ? "EUIN found" : "Employee Unique Identification Number (EUIN) not displayed" } } },
+  { id: "REG-008", name: "Registered Office Address", category: "Registration & Identity", severity: "major", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /registered\s*(office|address)/i.test(ctx.text) || /office\s*address/i.test(ctx.text) || /address\s*:/i.test(ctx.text); return { passed: has, details: has ? "Office address found" : "Registered office address not displayed" } } },
+  { id: "REG-009", name: "Registration Validity Date", category: "Registration & Identity", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS"],
+    check: (ctx) => { const has = /valid\s*(till|until|upto|from)/i.test(ctx.text) || /validity/i.test(ctx.text) || /registration\s*date/i.test(ctx.text); return { passed: has, details: has ? "Registration validity date found" : "Registration validity period not mentioned" } } },
+  { id: "REG-010", name: "BASL Membership (RIA)", category: "Registration & Identity", severity: "major", businessTypes: ["RIA"],
+    check: (ctx) => { const has = /BASL/i.test(ctx.text) || /BSE\s*Administration/i.test(ctx.text); return { passed: has, details: has ? "BASL membership reference found" : "BASL (BSE Administration and Supervision Ltd) membership not displayed" } } },
+
+  // DISCLAIMERS EXPANDED
+  { id: "DISC-006", name: "Past Performance Disclaimer", category: "Disclaimers & Disclosures", severity: "critical", businessTypes: ["MFD", "RIA", "PMS", "SIF"],
+    check: (ctx) => { const has = /past\s*performance/i.test(ctx.text); return { passed: has, details: has ? "Past performance disclaimer found" : "Missing 'past performance is not indicative of future results' disclaimer" } } },
+  { id: "DISC-007", name: "Read Scheme Document Carefully", category: "Disclaimers & Disclosures", severity: "critical", businessTypes: ["MFD"],
+    check: (ctx) => { const has = /read\s*(the\s*)?(scheme|offer)\s*(information\s*)?document/i.test(ctx.text) || /SID/i.test(ctx.text); return { passed: has, details: has ? "Scheme document reading advisory found" : "Missing 'read scheme documents carefully' advisory" } } },
+  { id: "DISC-008", name: "Investment in Securities Subject to Risk", category: "Disclaimers & Disclosures", severity: "major", businessTypes: ["Stock Broker", "PMS"],
+    check: (ctx) => { const has = /securities\s*(market|trading)?\s*(are|is)?\s*subject\s*to\s*(market\s*)?risk/i.test(ctx.text) || /trading.*risk/i.test(ctx.text); return { passed: has, details: has ? "Securities risk disclaimer found" : "Missing securities market risk disclaimer" } } },
+  { id: "DISC-009", name: "Tax Implications Disclosure", category: "Disclaimers & Disclosures", severity: "minor", businessTypes: ["MFD", "RIA", "PMS", "Insurance"],
+    check: (ctx) => { const has = /tax\s*(implicat|benefit|liabilit|consult|advis)/i.test(ctx.text); return { passed: has, details: has ? "Tax implications mentioned" : "No tax implications or tax advisory mentioned" } } },
+  { id: "DISC-010", name: "KYC Requirement Mention", category: "Disclaimers & Disclosures", severity: "major", businessTypes: ["MFD", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /KYC/i.test(ctx.text) || /know\s*your\s*(customer|client)/i.test(ctx.text); return { passed: has, details: has ? "KYC requirement mentioned" : "KYC requirements not mentioned — mandatory for all SEBI-regulated entities" } } },
+  { id: "DISC-011", name: "DPDPA 2023 Compliance", category: "Disclaimers & Disclosures", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /DPDPA/i.test(ctx.text) || /data\s*protection/i.test(ctx.text) || /personal\s*data/i.test(ctx.text); return { passed: has, details: has ? "Data protection reference found" : "DPDPA 2023 / data protection not mentioned" } } },
+  { id: "DISC-012", name: "No Assured Returns Statement", category: "Disclaimers & Disclosures", severity: "critical", businessTypes: ["Insurance"],
+    check: (ctx) => { const has = /not\s*assured/i.test(ctx.text) || /bonus\s*rates\s*are\s*not\s*guaranteed/i.test(ctx.text) || /insurance\s*is\s*not\s*deposit/i.test(ctx.text); return { passed: has, details: has ? "No assured returns statement found" : "Missing 'insurance is not a deposit product' / no assured returns disclaimer" } } },
+
+  // CONTACT EXPANDED
+  { id: "CONT-004", name: "Physical Office Address", category: "Contact & Grievance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /\d{6}/i.test(ctx.text) && /(street|road|lane|floor|block|tower|nagar|colony|sector)/i.test(ctx.text); return { passed: has, details: has ? "Physical address with PIN code found" : "No physical office address with PIN code found" } } },
+  { id: "CONT-005", name: "Compliance Officer Details", category: "Contact & Grievance", severity: "major", businessTypes: ["RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /compliance\s*officer/i.test(ctx.text); return { passed: has, details: has ? "Compliance officer details found" : "Compliance officer details not displayed — required by SEBI" } } },
+  { id: "CONT-006", name: "Designated Email for Complaints", category: "Contact & Grievance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /(complaint|grievance|support|help)\s*[@]/i.test(ctx.text) || ctx.$('a[href*="mailto:"]').filter((_, el) => /(complaint|grievance|support)/i.test(ctx.$(el).attr("href") || "")).length > 0; return { passed: has, details: has ? "Dedicated complaint/support email found" : "No dedicated complaint email address found" } } },
+  { id: "CONT-007", name: "ODR Portal Reference", category: "Contact & Grievance", severity: "minor", businessTypes: ["MFD", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /ODR\b/i.test(ctx.text) || /online\s*dispute\s*resolution/i.test(ctx.text) || ctx.links.some((l) => /smartodr/i.test(l)); return { passed: has, details: has ? "ODR reference found" : "SEBI ODR (Online Dispute Resolution) portal not referenced" } } },
+
+  // PRIVACY EXPANDED
+  { id: "PRIV-004", name: "Cookie Policy / Consent", category: "Privacy & Legal", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /cookie/i.test(ctx.text) || ctx.$('[class*="cookie"]').length > 0; return { passed: has, details: has ? "Cookie policy/consent found" : "No cookie policy or consent mechanism found" } } },
+  { id: "PRIV-005", name: "Data Collection Disclosure", category: "Privacy & Legal", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /collect.*data/i.test(ctx.text) || /information.*collect/i.test(ctx.text) || /data.*collect/i.test(ctx.text); return { passed: has, details: has ? "Data collection disclosure found" : "No explicit data collection disclosure found" } } },
+  { id: "PRIV-006", name: "Refund / Cancellation Policy", category: "Privacy & Legal", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS"],
+    check: (ctx) => { const has = /refund/i.test(ctx.text) || /cancellat/i.test(ctx.text); return { passed: has, details: has ? "Refund/cancellation policy found" : "No refund or cancellation policy found" } } },
+
+  // TECHNICAL EXPANDED
+  { id: "TECH-004", name: "Favicon Present", category: "Technical & Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('link[rel*="icon"]').length > 0; return { passed: has, details: has ? "Favicon found" : "No favicon — looks unprofessional in browser tabs" } } },
+  { id: "TECH-005", name: "Open Graph / Social Meta Tags", category: "Technical & Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('meta[property^="og:"]').length >= 2; return { passed: has, details: has ? "Open Graph meta tags found" : "Missing Open Graph tags — poor social media sharing experience" } } },
+  { id: "TECH-006", name: "Canonical URL", category: "Technical & Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('link[rel="canonical"]').length > 0; return { passed: has, details: has ? "Canonical URL found" : "Missing canonical URL — may cause duplicate content issues" } } },
+  { id: "TECH-007", name: "Image Alt Text Coverage", category: "Technical & Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const total = ctx.$("img").length; const withAlt = ctx.$("img[alt]").filter((_, e) => (ctx.$(e).attr("alt") || "").length > 1).length; if (total === 0) return { passed: true, details: "No images on page" }; const pct = Math.round((withAlt / total) * 100); return { passed: pct >= 60, details: `${withAlt}/${total} images have alt text (${pct}%)` } } },
+  { id: "TECH-008", name: "robots.txt / Sitemap Reference", category: "Technical & Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('meta[name="robots"]').length > 0 || ctx.links.some((l) => /sitemap/i.test(l)); return { passed: has, details: has ? "Robots/sitemap reference found" : "No robots meta or sitemap link — may affect SEO indexing" } } },
+  { id: "TECH-009", name: "Loading Speed Indicators", category: "Technical & Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const scripts = ctx.$("script[src]").length; const styles = ctx.$('link[rel="stylesheet"]').length; const heavy = scripts + styles > 25; return { passed: !heavy, details: heavy ? `Heavy page: ${scripts} scripts + ${styles} stylesheets may slow loading` : `Reasonable asset count: ${scripts} scripts, ${styles} stylesheets` } } },
+
+  // CONTENT QUALITY EXPANDED
+  { id: "QUAL-004", name: "Team / Founder Section", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /team/i.test(ctx.text) || /founder/i.test(ctx.text) || /director/i.test(ctx.text) || /promoter/i.test(ctx.text) || /our\s*people/i.test(ctx.text); return { passed: has, details: has ? "Team/founder section found" : "No team or founder section — recommended for credibility" } } },
+  { id: "QUAL-005", name: "Contact Form / CTA", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$("form").length > 0 || ctx.$('a[href*="contact"]').length > 0 || ctx.$('button').filter((_, el) => /contact|enquir|get in touch|reach/i.test(ctx.$(el).text())).length > 0; return { passed: has, details: has ? "Contact form or CTA found" : "No contact form or call-to-action button found" } } },
+  { id: "QUAL-006", name: "Client Testimonials / Reviews", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /testimon/i.test(ctx.text) || /review/i.test(ctx.text) || /client.*say/i.test(ctx.text) || /feedback/i.test(ctx.text); return { passed: has, details: has ? "Testimonials/reviews section found" : "No client testimonials found — helps build trust" } } },
+  { id: "QUAL-007", name: "Blog / Knowledge Section", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /blog/i.test(ctx.text) || /articles/i.test(ctx.text) || /knowledge/i.test(ctx.text) || /insights/i.test(ctx.text) || ctx.$('a').filter((_, el) => /blog/i.test(ctx.$(el).text())).length > 0; return { passed: has, details: has ? "Blog/knowledge section found" : "No blog or knowledge section — good for SEO and credibility" } } },
+  { id: "QUAL-008", name: "Copyright Notice", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /©|copyright|\(c\)/i.test(ctx.text); return { passed: has, details: has ? "Copyright notice found" : "No copyright notice found" } } },
+  { id: "QUAL-009", name: "Calculator / Tool", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA"],
+    check: (ctx) => { const has = /calculator/i.test(ctx.text) || /SIP\s*calculator/i.test(ctx.text) || /retirement\s*calculator/i.test(ctx.text) || /EMI/i.test(ctx.text); return { passed: has, details: has ? "Financial calculator/tool found" : "No financial calculator — SIP/retirement/goal calculators improve engagement" } } },
+  { id: "QUAL-010", name: "Social Media Links", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.links.some((l) => /(facebook|twitter|linkedin|instagram|youtube|x\.com)/i.test(l)); return { passed: has, details: has ? "Social media links found" : "No social media links — recommended for credibility" } } },
+
+  // PMS EXPANDED
+  { id: "PMS-003", name: "PMS Track Record Disclosure", category: "PMS Specific", severity: "minor", businessTypes: ["PMS"],
+    check: (ctx) => { const has = /track\s*record/i.test(ctx.text) || /performance\s*data/i.test(ctx.text) || /returns\s*since/i.test(ctx.text); return { passed: has, details: has ? "Track record disclosure found" : "PMS track record not displayed — investors expect performance data" } } },
+  { id: "PMS-004", name: "PMS Strategy Description", category: "PMS Specific", severity: "minor", businessTypes: ["PMS"],
+    check: (ctx) => { const has = /strategy/i.test(ctx.text) || /investment\s*approach/i.test(ctx.text) || /portfolio\s*construct/i.test(ctx.text); return { passed: has, details: has ? "Investment strategy description found" : "PMS investment strategy not described" } } },
+  { id: "PMS-005", name: "PMS Risk Factors", category: "PMS Specific", severity: "major", businessTypes: ["PMS"],
+    check: (ctx) => { const has = /risk\s*factor/i.test(ctx.text) || /concentration\s*risk/i.test(ctx.text) || /liquidity\s*risk/i.test(ctx.text); return { passed: has, details: has ? "PMS risk factors disclosed" : "PMS risk factors not disclosed" } } },
+
+  // NPS EXPANDED
+  { id: "NPS-001", name: "NPS Tier I & II Explanation", category: "NPS Specific", severity: "minor", businessTypes: ["NPS"],
+    check: (ctx) => { const has = /tier\s*(i|1|one)/i.test(ctx.text) || /tier\s*(ii|2|two)/i.test(ctx.text); return { passed: has, details: has ? "NPS Tier I/II explanation found" : "NPS Tier I and Tier II differences not explained" } } },
+  { id: "NPS-002", name: "NPS Tax Benefits", category: "NPS Specific", severity: "minor", businessTypes: ["NPS"],
+    check: (ctx) => { const has = /80CCD/i.test(ctx.text) || /section\s*80/i.test(ctx.text) || /tax\s*benefit.*nps/i.test(ctx.text) || /nps.*tax\s*benefit/i.test(ctx.text); return { passed: has, details: has ? "NPS tax benefits mentioned" : "NPS tax benefits (80CCD) not mentioned — key selling point" } } },
+  { id: "NPS-003", name: "NPS Fund Manager Options", category: "NPS Specific", severity: "minor", businessTypes: ["NPS"],
+    check: (ctx) => { const has = /fund\s*manager/i.test(ctx.text) || /pension\s*fund/i.test(ctx.text) || /(SBI|LIC|HDFC|ICICI|Kotak|UTI|Aditya Birla)\s*(pension|PF)/i.test(ctx.text); return { passed: has, details: has ? "NPS fund manager information found" : "NPS fund manager options not listed" } } },
+
+  // INSURANCE EXPANDED
+  { id: "INS-001", name: "Insurance Product Category Display", category: "Insurance Specific", severity: "minor", businessTypes: ["Insurance"],
+    check: (ctx) => { const has = /life\s*insurance/i.test(ctx.text) || /health\s*insurance/i.test(ctx.text) || /general\s*insurance/i.test(ctx.text) || /motor\s*insurance/i.test(ctx.text); return { passed: has, details: has ? "Insurance product categories listed" : "Insurance product categories not clearly listed" } } },
+  { id: "INS-002", name: "Claims Process Information", category: "Insurance Specific", severity: "minor", businessTypes: ["Insurance"],
+    check: (ctx) => { const has = /claim\s*(process|procedure|settlement)/i.test(ctx.text); return { passed: has, details: has ? "Claims process information found" : "Insurance claims process not described" } } },
+  { id: "INS-003", name: "IRDAI Website Link", category: "Insurance Specific", severity: "minor", businessTypes: ["Insurance"],
+    check: (ctx) => { const has = ctx.links.some((l) => /irdai\.gov\.in/i.test(l)) || /irdai\.gov/i.test(ctx.text); return { passed: has, details: has ? "IRDAI website link found" : "No link to IRDAI website — recommended" } } },
+
+  // STOCK BROKER EXPANDED
+  { id: "SB-003", name: "SEBI Reg Number Format (INZ)", category: "Stock Broker Specific", severity: "major", businessTypes: ["Stock Broker"],
+    check: (ctx) => { const has = /INZ\d{12,}/i.test(ctx.text); return { passed: has, details: has ? "SEBI INZ format registration number found" : "SEBI INZ registration number not in proper format" } } },
+  { id: "SB-004", name: "Client Funds Segregation Notice", category: "Stock Broker Specific", severity: "major", businessTypes: ["Stock Broker"],
+    check: (ctx) => { const has = /client\s*(fund|money)/i.test(ctx.text) || /segregat/i.test(ctx.text) || /trading\s*account/i.test(ctx.text); return { passed: has, details: has ? "Client funds information found" : "No mention of client funds segregation — important compliance requirement" } } },
+  { id: "SB-005", name: "Do's and Don'ts for Investors", category: "Stock Broker Specific", severity: "minor", businessTypes: ["Stock Broker"],
+    check: (ctx) => { const has = /do('s|s)?\s*(and|&)\s*don('t|t)('s|s)?/i.test(ctx.text) || /investor\s*awareness/i.test(ctx.text); return { passed: has, details: has ? "Investor awareness/Do's and Don'ts found" : "Missing investor awareness section (Do's and Don'ts)" } } },
+
+  // MFD EXPANDED
+  { id: "MFD-001", name: "AMFI Website Link", category: "MFD Specific", severity: "minor", businessTypes: ["MFD"],
+    check: (ctx) => { const has = ctx.links.some((l) => /amfiindia/i.test(l)) || /amfiindia/i.test(ctx.text); return { passed: has, details: has ? "AMFI website link found" : "No link to AMFI India website" } } },
+  { id: "MFD-002", name: "NFO / New Fund Offer Section", category: "MFD Specific", severity: "minor", businessTypes: ["MFD"],
+    check: (ctx) => { const has = /NFO/i.test(ctx.text) || /new\s*fund\s*offer/i.test(ctx.text); return { passed: has, details: has ? "NFO section found" : "No NFO/New Fund Offer section — helpful for investor awareness" } } },
+  { id: "MFD-003", name: "SIP Information", category: "MFD Specific", severity: "minor", businessTypes: ["MFD"],
+    check: (ctx) => { const has = /SIP/i.test(ctx.text) || /systematic\s*investment/i.test(ctx.text); return { passed: has, details: has ? "SIP information found" : "No SIP (Systematic Investment Plan) information — key product for MFDs" } } },
+
+  // RIA EXPANDED
+  { id: "RIA-001", name: "Fee-Only / Fee-Based Disclosure", category: "RIA Specific", severity: "major", businessTypes: ["RIA"],
+    check: (ctx) => { const has = /fee[\s-]*(only|based)/i.test(ctx.text) || /advisory\s*fee/i.test(ctx.text) || /consultation\s*fee/i.test(ctx.text); return { passed: has, details: has ? "Fee structure disclosure found" : "RIA fee structure (fee-only/fee-based) not disclosed — required by SEBI" } } },
+  { id: "RIA-002", name: "Fiduciary Duty Statement", category: "RIA Specific", severity: "minor", businessTypes: ["RIA"],
+    check: (ctx) => { const has = /fiduciary/i.test(ctx.text) || /best\s*interest.*client/i.test(ctx.text) || /client.*best\s*interest/i.test(ctx.text); return { passed: has, details: has ? "Fiduciary duty reference found" : "No fiduciary duty statement — RIAs have fiduciary responsibility" } } },
+  { id: "RIA-003", name: "Risk Profiling Mention", category: "RIA Specific", severity: "minor", businessTypes: ["RIA"],
+    check: (ctx) => { const has = /risk\s*profil/i.test(ctx.text) || /risk\s*assess/i.test(ctx.text) || /risk\s*tolerance/i.test(ctx.text); return { passed: has, details: has ? "Risk profiling mentioned" : "No risk profiling/assessment mentioned — fundamental to advisory" } } },
 ]
 
 export function runAudit(url: string, html: string): AuditResult {

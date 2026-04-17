@@ -99,6 +99,36 @@ export async function getSubmissions(status?: string) {
   return data || []
 }
 
+export async function getAuditHistory() {
+  const session = await getAdminSession()
+  if (!session) return { error: "Unauthorized" }
+
+  const supabase = createServerClient()
+  const { data, error } = await supabase
+    .from("audits")
+    .select("audit_id, url, status, detected_business_types, compliance_report, created_at")
+    .order("created_at", { ascending: false })
+    .limit(50)
+
+  if (error) return { error: error.message }
+  return (data || []).map((a) => {
+    const report = (a.compliance_report || {}) as Record<string, number>
+    return {
+      audit_id: a.audit_id,
+      url: a.url,
+      status: a.status,
+      detected_business_types: a.detected_business_types || [],
+      overall_score: report.overall_score ?? 0,
+      total_rules: report.total_rules ?? 0,
+      passed_rules: report.passed_rules ?? 0,
+      failed_rules: report.failed_rules ?? 0,
+      critical_failures: report.critical_failures ?? 0,
+      created_at: a.created_at,
+    }
+  })
+}
+
+
 export async function updateSubmissionStatus(submissionId: string, newStatus: string) {
   const session = await getAdminSession()
   if (!session) return { error: "Unauthorized" }
