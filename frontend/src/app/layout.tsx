@@ -1,12 +1,9 @@
 import type { Metadata } from "next"
-import { Outfit, Manrope, JetBrains_Mono } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
+import { Inter } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-heading", display: "swap" })
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-body", display: "swap" })
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" })
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" })
 
 export const metadata: Metadata = {
   title: "FinSites - Compliant Websites for Financial Professionals",
@@ -15,12 +12,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className={`${outfit.variable} ${manrope.variable} ${jetbrainsMono.variable} font-[family-name:var(--font-body)] antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster position="top-right" richColors />
-        </ThemeProvider>
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className={`${inter.variable} antialiased`}>
+        {children}
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   )

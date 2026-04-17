@@ -175,25 +175,25 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen" data-testid="setup-page">
+    <div className="min-h-screen bg-[#030712]" data-testid="setup-page">
       <Navbar />
       <div className="pt-20 pb-16">
         <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border/60 bg-card/40 text-xs font-medium text-muted-foreground mb-4">
-              <Database className="w-3.5 h-3.5 text-primary" /> Database Setup
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-800/60 bg-slate-900/40 text-xs font-medium text-slate-400 mb-4">
+              <Database className="w-3.5 h-3.5 text-blue-400" /> Database Setup
             </div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 font-[family-name:var(--font-heading)]" data-testid="setup-title">
               Supabase Schema Setup
             </h1>
-            <p className="text-muted-foreground max-w-lg mx-auto">
+            <p className="text-slate-400 max-w-lg mx-auto">
               Run this SQL in your Supabase project to create all required tables, seed data, and security policies.
             </p>
           </div>
 
           {/* Steps */}
           <Card className="glass mb-8">
-            <CardHeader><CardTitle className="text-base text-foreground">Setup Instructions</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base text-white">Setup Instructions</CardTitle></CardHeader>
             <CardContent>
               <ol className="space-y-4">
                 {[
@@ -204,11 +204,11 @@ export default function SetupPage() {
                   { step: "5", text: "Click 'Run' (or Ctrl+Enter)" },
                 ].map((item) => (
                   <li key={item.step} className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center">{item.step}</span>
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600/10 text-blue-400 text-xs font-bold flex items-center justify-center">{item.step}</span>
                     <div className="flex items-center gap-2 pt-0.5">
-                      <span className="text-sm text-foreground">{item.text}</span>
+                      <span className="text-sm text-white">{item.text}</span>
                       {item.link && (
-                        <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1 text-xs">
+                        <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline inline-flex items-center gap-1 text-xs">
                           Open <ExternalLink className="w-3 h-3" />
                         </a>
                       )}
@@ -221,15 +221,15 @@ export default function SetupPage() {
 
           {/* Tables Overview */}
           <Card className="glass mb-8">
-            <CardHeader><CardTitle className="text-base text-foreground">Tables Created</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base text-white">Tables Created</CardTitle></CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 gap-3">
                 {TABLES.map((t) => (
-                  <div key={t.name} className="flex items-start gap-2 p-3 rounded-lg bg-secondary/50 border border-border/30">
+                  <div key={t.name} className="flex items-start gap-2 p-3 rounded-lg bg-slate-800/50 border border-slate-800/30">
                     <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                     <div>
-                      <span className="text-sm font-mono font-medium text-foreground">{t.name}</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                      <span className="text-sm font-mono font-medium text-white">{t.name}</span>
+                      <p className="text-xs text-slate-400 mt-0.5">{t.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -243,10 +243,10 @@ export default function SetupPage() {
           </Card>
 
           {/* SQL Schema */}
-          <Card className="glass" data-testid="schema-card">
+          <Card className="bg-slate-900 border border-slate-800 rounded-2xl" data-testid="schema-card">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base text-foreground">SQL Schema</CardTitle>
+                <CardTitle className="text-base text-white">SQL Schema</CardTitle>
                 <Button onClick={copySchema} variant="outline" size="sm" className="gap-1.5 text-xs h-8" data-testid="copy-schema-btn">
                   {copied ? <><CheckCircle2 className="w-3.5 h-3.5 text-green-400" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy SQL</>}
                 </Button>
@@ -254,7 +254,7 @@ export default function SetupPage() {
             </CardHeader>
             <CardContent>
               <div className="relative">
-                <pre className="p-4 rounded-xl bg-[oklch(0.08_0.015_260)] text-[oklch(0.82_0.01_260)] text-xs leading-relaxed overflow-x-auto max-h-[500px] overflow-y-auto font-mono border border-border/30" data-testid="schema-code">
+                <pre className="p-4 rounded-xl bg-[oklch(0.08_0.015_260)] text-[oklch(0.82_0.01_260)] text-xs leading-relaxed overflow-x-auto max-h-[500px] overflow-y-auto font-mono border border-slate-800/30" data-testid="schema-code">
                   <code>{SCHEMA_SQL}</code>
                 </pre>
               </div>

@@ -99,9 +99,9 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen" data-testid="admin-dashboard">
+    <div className="min-h-screen bg-[#030712]" data-testid="admin-dashboard">
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-slate-800 bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
@@ -109,10 +109,10 @@ export default function AdminDashboard() {
             </div>
             <div>
               <span className="text-sm font-bold">FinSites Admin</span>
-              <span className="text-xs text-muted-foreground ml-2">{admin?.name}</span>
+              <span className="text-xs text-slate-400 ml-2">{admin?.name}</span>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-1.5 text-xs text-muted-foreground" data-testid="admin-logout">
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-1.5 text-xs text-slate-400" data-testid="admin-logout">
             <LogOut className="w-3.5 h-3.5" /> Logout
           </Button>
         </div>
@@ -130,12 +130,12 @@ export default function AdminDashboard() {
             ].map((s) => (
               <Card key={s.label} className="glass" data-testid={`stat-${s.label.toLowerCase().replace(/\s+/g, "-")}`}>
                 <CardContent className="pt-4 pb-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center">
                     <s.icon className={`w-5 h-5 ${s.color}`} />
                   </div>
                   <div>
-                    <div className="text-2xl font-black text-foreground">{s.value}</div>
-                    <div className="text-xs text-muted-foreground">{s.label}</div>
+                    <div className="text-2xl font-black text-white">{s.value}</div>
+                    <div className="text-xs text-slate-400">{s.label}</div>
                   </div>
                 </CardContent>
               </Card>
@@ -162,8 +162,8 @@ export default function AdminDashboard() {
                   <CardTitle className="text-base">Submissions</CardTitle>
                   <div className="flex items-center gap-2">
                     <div className="relative">
-                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="pl-8 h-8 w-48 text-xs bg-secondary" data-testid="admin-search" />
+                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="pl-8 h-8 w-48 text-xs bg-slate-800" data-testid="admin-search" />
                     </div>
                     <div className="flex gap-1 flex-wrap">
                       {["all", "submitted", "reviewing", "in_progress", "completed"].map((f) => (
@@ -181,17 +181,17 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 {filteredSubs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-12">No submissions found</p>
+                  <p className="text-sm text-slate-400 text-center py-12">No submissions found</p>
                 ) : (
                   <div className="space-y-2">
                     {filteredSubs.map((sub) => (
-                      <div key={sub.submission_id} className="flex items-center gap-4 p-4 rounded-xl bg-secondary/40 border border-border/50" data-testid={`sub-${sub.submission_id}`}>
+                      <div key={sub.submission_id} className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/40 border border-slate-800/50" data-testid={`sub-${sub.submission_id}`}>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-foreground">{sub.client_name || "Unnamed"}</span>
-                            <span className="text-[10px] font-mono text-muted-foreground">{sub.reference_number}</span>
+                            <span className="text-sm font-medium text-white">{sub.client_name || "Unnamed"}</span>
+                            <span className="text-[10px] font-mono text-slate-400">{sub.reference_number}</span>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-3 text-xs text-slate-400">
                             <span>{sub.client_email}</span>
                             {sub.client_phone && <span>{sub.client_phone}</span>}
                           </div>
@@ -204,17 +204,17 @@ export default function AdminDashboard() {
                             <Badge className={`${STATUS_COLORS[sub.status] || STATUS_COLORS.submitted} text-[10px] cursor-pointer capitalize`} data-testid={`status-badge-${sub.submission_id}`}>
                               {sub.status.replace("_", " ")} <ChevronDown className="w-3 h-3 ml-0.5 inline" />
                             </Badge>
-                            <div className="hidden group-hover:block absolute right-0 top-full mt-1 w-36 rounded-lg border border-border bg-popover p-1 shadow-lg z-50" data-testid={`status-dropdown-${sub.submission_id}`}>
+                            <div className="hidden group-hover:block absolute right-0 top-full mt-1 w-36 rounded-lg border border-slate-800 bg-slate-900 p-1 shadow-lg z-50" data-testid={`status-dropdown-${sub.submission_id}`}>
                               {STATUS_OPTS.map((opt) => (
                                 <button key={opt} onClick={() => handleStatusChange(sub.submission_id, opt)}
                                   disabled={updatingId === sub.submission_id}
-                                  className={`block w-full text-left px-3 py-1.5 text-xs rounded-md capitalize transition-colors ${sub.status === opt ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}>
+                                  className={`block w-full text-left px-3 py-1.5 text-xs rounded-md capitalize transition-colors ${sub.status === opt ? "bg-slate-800 text-white font-medium" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`}>
                                   {opt.replace("_", " ")}
                                 </button>
                               ))}
                             </div>
                           </div>
-                          <div className="text-[10px] text-muted-foreground mt-1">{new Date(sub.submitted_at).toLocaleDateString()}</div>
+                          <div className="text-[10px] text-slate-400 mt-1">{new Date(sub.submitted_at).toLocaleDateString()}</div>
                         </div>
                       </div>
                     ))}
@@ -232,8 +232,8 @@ export default function AdminDashboard() {
                   <CardTitle className="text-base">Audit History</CardTitle>
                   <div className="flex items-center gap-2">
                     <div className="relative">
-                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input value={auditSearch} onChange={(e) => setAuditSearch(e.target.value)} placeholder="Search URL or type..." className="pl-8 h-8 w-56 text-xs bg-secondary" data-testid="audit-history-search" />
+                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Input value={auditSearch} onChange={(e) => setAuditSearch(e.target.value)} placeholder="Search URL or type..." className="pl-8 h-8 w-56 text-xs bg-slate-800" data-testid="audit-history-search" />
                     </div>
                     <Button variant="outline" size="sm" className="h-7" onClick={loadData}>
                       <RefreshCw className="w-3 h-3" />
@@ -243,21 +243,21 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 {filteredAudits.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-12">No audits found</p>
+                  <p className="text-sm text-slate-400 text-center py-12">No audits found</p>
                 ) : (
                   <div className="space-y-2">
                     {filteredAudits.map((audit) => (
-                      <div key={audit.audit_id} className="flex items-center gap-4 p-4 rounded-xl bg-secondary/40 border border-border/50" data-testid={`audit-row-${audit.audit_id}`}>
+                      <div key={audit.audit_id} className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/40 border border-slate-800/50" data-testid={`audit-row-${audit.audit_id}`}>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                            <span className="text-sm font-medium text-foreground truncate">{audit.url}</span>
+                            <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="text-sm font-medium text-white truncate">{audit.url}</span>
                           </div>
                           <div className="flex flex-wrap gap-1 mt-1.5">
                             {(audit.detected_business_types || []).map((bt) => (
                               <Badge key={bt} className="text-[9px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30">{bt}</Badge>
                             ))}
-                            {audit.detected_business_types.length === 0 && <span className="text-[10px] text-muted-foreground">No type detected</span>}
+                            {audit.detected_business_types.length === 0 && <span className="text-[10px] text-slate-400">No type detected</span>}
                           </div>
                         </div>
                         <div className="text-right shrink-0 space-y-1">
@@ -266,14 +266,14 @@ export default function AdminDashboard() {
                             <span className={`text-lg font-black ${audit.overall_score >= 80 ? "text-green-400" : audit.overall_score >= 50 ? "text-yellow-400" : "text-red-400"}`}>
                               {audit.overall_score}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">/ 100</span>
+                            <span className="text-[10px] text-slate-400">/ 100</span>
                           </div>
-                          <div className="flex items-center gap-2 justify-end text-[10px] text-muted-foreground">
+                          <div className="flex items-center gap-2 justify-end text-[10px] text-slate-400">
                             <span className="text-green-400">{audit.passed_rules}P</span>
                             <span className="text-red-400">{audit.failed_rules}F</span>
                             {audit.critical_failures > 0 && <span className="text-red-500 font-bold">{audit.critical_failures}C</span>}
                           </div>
-                          <div className="text-[10px] text-muted-foreground">{new Date(audit.created_at).toLocaleDateString()}</div>
+                          <div className="text-[10px] text-slate-400">{new Date(audit.created_at).toLocaleDateString()}</div>
                         </div>
                       </div>
                     ))}

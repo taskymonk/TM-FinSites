@@ -232,13 +232,13 @@ export default function OnboardingPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" data-testid="onboarding-page">
+    <div className="min-h-screen bg-[#030712]" data-testid="onboarding-page">
       <Navbar />
       <div className="pt-20 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -246,8 +246,8 @@ export default function OnboardingPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
               {STEPS.map((s, i) => (
-                <div key={s} className={`flex items-center gap-1.5 text-xs font-medium ${i + 1 <= step ? "text-primary" : "text-muted-foreground"}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${i + 1 < step ? "bg-primary text-primary-foreground" : i + 1 === step ? "bg-primary/20 text-primary border border-primary" : "bg-secondary text-muted-foreground"}`}>
+                <div key={s} className={`flex items-center gap-1.5 text-xs font-medium ${i + 1 <= step ? "text-blue-400" : "text-slate-400"}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${i + 1 < step ? "bg-primary text-blue-400-foreground" : i + 1 === step ? "bg-blue-600/15 text-blue-400 border border-blue-500" : "bg-slate-800 text-slate-400"}`}>
                     {i + 1 < step ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
                   </span>
                   <span className="hidden sm:inline">{s}</span>
@@ -262,46 +262,46 @@ export default function OnboardingPage() {
 
               {/* STEP 1: Business Type */}
               {step === 1 && (
-                <Card className="glass" data-testid="step-1">
+                <Card className="bg-slate-900 border border-slate-800 rounded-2xl" data-testid="step-1">
                   <CardHeader>
                     <CardTitle className="text-xl">Select Your Business Type(s)</CardTitle>
-                    <p className="text-sm text-muted-foreground">Choose all that apply. We&apos;ll customize your website for each.</p>
+                    <p className="text-sm text-slate-400">Choose all that apply. We&apos;ll customize your website for each.</p>
                   </CardHeader>
                   <CardContent>
                     {/* Resume Banner */}
                     {!showResume && step === 1 && (
-                      <div className="mb-5 p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between" data-testid="resume-banner">
-                        <p className="text-xs text-muted-foreground">Already started? <span className="text-foreground font-medium">Resume where you left off.</span></p>
-                        <Button variant="ghost" size="sm" className="h-7 text-xs text-primary hover:text-primary" onClick={() => setShowResume(true)} data-testid="resume-open-btn">Resume Wizard</Button>
+                      <div className="mb-5 p-3 rounded-xl bg-primary/5 border border-blue-500/20 flex items-center justify-between" data-testid="resume-banner">
+                        <p className="text-xs text-slate-400">Already started? <span className="text-white font-medium">Resume where you left off.</span></p>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs text-blue-400 hover:text-blue-400" onClick={() => setShowResume(true)} data-testid="resume-open-btn">Resume Wizard</Button>
                       </div>
                     )}
 
                     {showResume && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mb-5 p-4 rounded-xl bg-card border border-border" data-testid="resume-panel">
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mb-5 p-4 rounded-xl bg-slate-900 border border-slate-800" data-testid="resume-panel">
                         <h4 className="text-sm font-medium mb-2">Find Your Session</h4>
                         <div className="flex gap-2 mb-3">
-                          <Input value={resumeEmail} onChange={(e) => setResumeEmail(e.target.value)} placeholder="Enter your email" className="bg-secondary text-sm" data-testid="resume-email-input"
+                          <Input value={resumeEmail} onChange={(e) => setResumeEmail(e.target.value)} placeholder="Enter your email" className="bg-slate-800 text-sm" data-testid="resume-email-input"
                             onKeyDown={(e) => e.key === "Enter" && lookupResumeSessions()} />
                           <Button size="sm" onClick={lookupResumeSessions} disabled={resumeLoading || !resumeEmail.trim()} className="text-xs shrink-0" data-testid="resume-lookup-btn">
                             {resumeLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Look Up"}
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => { setShowResume(false); setResumeSessions([]) }} className="text-xs shrink-0 text-muted-foreground">Cancel</Button>
+                          <Button variant="ghost" size="sm" onClick={() => { setShowResume(false); setResumeSessions([]) }} className="text-xs shrink-0 text-slate-400">Cancel</Button>
                         </div>
                         {resumeSessions.length > 0 && (
                           <div className="space-y-2" data-testid="resume-sessions-list">
                             {resumeSessions.map((s) => (
                               <button key={s.sessionId} onClick={() => resumeSession(s.sessionId)}
-                                className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary/60 border border-border hover:border-primary/30 transition-all text-left"
+                                className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-800/60 border border-slate-800 hover:border-blue-500/30 transition-all text-left"
                                 data-testid={`resume-session-${s.sessionId}`}>
                                 <div>
-                                  <div className="text-sm font-medium text-foreground">{s.contactName || "Unnamed"}</div>
+                                  <div className="text-sm font-medium text-white">{s.contactName || "Unnamed"}</div>
                                   <div className="flex items-center gap-2 mt-0.5">
-                                    {s.businessTypes.map((bt) => <Badge key={bt} className="text-[9px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30">{bt}</Badge>)}
+                                    {s.businessTypes.map((bt) => <Badge key={bt} className="text-[9px] px-1.5 py-0 bg-blue-600/10 text-blue-400 border-blue-500/30">{bt}</Badge>)}
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-[10px] text-muted-foreground">Step {s.currentStep} of 5</div>
-                                  <div className="text-[10px] text-muted-foreground">{new Date(s.updatedAt).toLocaleDateString()}</div>
+                                  <div className="text-[10px] text-slate-400">Step {s.currentStep} of 5</div>
+                                  <div className="text-[10px] text-slate-400">{new Date(s.updatedAt).toLocaleDateString()}</div>
                                 </div>
                               </button>
                             ))}
@@ -315,29 +315,29 @@ export default function OnboardingPage() {
                         const active = selectedTypes.includes(bt.id)
                         return (
                           <button key={bt.id} onClick={() => toggleType(bt.id)}
-                            className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${active ? "border-primary bg-primary/10" : "border-border hover:border-primary/30 bg-card"}`}
+                            className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${active ? "border-blue-500 bg-blue-600/10" : "border-slate-800 hover:border-blue-500/30 bg-slate-900"}`}
                             data-testid={`biz-type-${bt.id}`}>
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${active ? "bg-primary/20" : "bg-secondary"}`}>
-                              <bt.icon className={`w-5 h-5 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${active ? "bg-blue-600/15" : "bg-slate-800"}`}>
+                              <bt.icon className={`w-5 h-5 ${active ? "text-blue-400" : "text-slate-400"}`} />
                             </div>
                             <div>
-                              <div className={`text-sm font-medium ${active ? "text-foreground" : "text-muted-foreground"}`}>{bt.name}</div>
-                              <div className="text-[10px] text-muted-foreground font-mono">{bt.reg}</div>
+                              <div className={`text-sm font-medium ${active ? "text-white" : "text-slate-400"}`}>{bt.name}</div>
+                              <div className="text-[10px] text-slate-400 font-mono">{bt.reg}</div>
                             </div>
-                            {active && <CheckCircle2 className="w-5 h-5 text-primary ml-auto" />}
+                            {active && <CheckCircle2 className="w-5 h-5 text-blue-400 ml-auto" />}
                           </button>
                         )
                       })}
                     </div>
 
                     {/* Contact info */}
-                    <div className="border-t border-border pt-5 mt-2">
+                    <div className="border-t border-slate-800 pt-5 mt-2">
                       <h4 className="text-sm font-medium mb-3">Your Contact Details</h4>
                       <div className="grid sm:grid-cols-2 gap-3">
-                        <div><Label className="text-xs">Full Name *</Label><Input value={contact.name} onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))} placeholder="John Doe" className="bg-card" data-testid="contact-name" /></div>
-                        <div><Label className="text-xs">Email *</Label><Input type="email" value={contact.email} onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))} placeholder="john@example.com" className="bg-card" data-testid="contact-email" /></div>
-                        <div><Label className="text-xs">Phone</Label><Input value={contact.phone} onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))} placeholder="+91 98765 43210" className="bg-card" data-testid="contact-phone" /></div>
-                        <div><Label className="text-xs">Company</Label><Input value={contact.company} onChange={(e) => setContact((c) => ({ ...c, company: e.target.value }))} placeholder="ABC Financial" className="bg-card" data-testid="contact-company" /></div>
+                        <div><Label className="text-xs">Full Name *</Label><Input value={contact.name} onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))} placeholder="John Doe" className="bg-slate-900" data-testid="contact-name" /></div>
+                        <div><Label className="text-xs">Email *</Label><Input type="email" value={contact.email} onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))} placeholder="john@example.com" className="bg-slate-900" data-testid="contact-email" /></div>
+                        <div><Label className="text-xs">Phone</Label><Input value={contact.phone} onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))} placeholder="+91 98765 43210" className="bg-slate-900" data-testid="contact-phone" /></div>
+                        <div><Label className="text-xs">Company</Label><Input value={contact.company} onChange={(e) => setContact((c) => ({ ...c, company: e.target.value }))} placeholder="ABC Financial" className="bg-slate-900" data-testid="contact-company" /></div>
                       </div>
                     </div>
                   </CardContent>
@@ -346,21 +346,21 @@ export default function OnboardingPage() {
 
               {/* STEP 2: Registration Details */}
               {step === 2 && (
-                <Card className="glass" data-testid="step-2">
+                <Card className="bg-slate-900 border border-slate-800 rounded-2xl" data-testid="step-2">
                   <CardHeader>
                     <CardTitle className="text-xl">Registration & Compliance Details</CardTitle>
-                    <p className="text-sm text-muted-foreground">Provide your regulatory registration numbers for each business type.</p>
+                    <p className="text-sm text-slate-400">Provide your regulatory registration numbers for each business type.</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {selectedTypes.map((typeId) => (
-                      <div key={typeId} className="p-4 rounded-xl bg-secondary/40 border border-border/50">
-                        <Badge className="mb-3 bg-primary/15 text-primary border-primary/30 text-xs">{typeId}</Badge>
+                      <div key={typeId} className="p-4 rounded-xl bg-slate-800/40 border border-slate-800/50">
+                        <Badge className="mb-3 bg-blue-600/10 text-blue-400 border-blue-500/30 text-xs">{typeId}</Badge>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {(REG_FIELDS[typeId] || []).map((field) => (
                             <div key={field.key}>
                               <Label className="text-xs">{field.label}{field.required && " *"}</Label>
                               <Input value={wizardData.registration[typeId]?.[field.key] || ""} onChange={(e) => updateReg(typeId, field.key, e.target.value)}
-                                placeholder={field.placeholder} className="bg-card" data-testid={`reg-${typeId}-${field.key}`} />
+                                placeholder={field.placeholder} className="bg-slate-900" data-testid={`reg-${typeId}-${field.key}`} />
                             </div>
                           ))}
                         </div>
@@ -372,21 +372,21 @@ export default function OnboardingPage() {
 
               {/* STEP 3: Services */}
               {step === 3 && (
-                <Card className="glass" data-testid="step-3">
+                <Card className="bg-slate-900 border border-slate-800 rounded-2xl" data-testid="step-3">
                   <CardHeader>
                     <CardTitle className="text-xl">Services & Offerings</CardTitle>
-                    <p className="text-sm text-muted-foreground">Select the services you offer for each business type.</p>
+                    <p className="text-sm text-slate-400">Select the services you offer for each business type.</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {selectedTypes.map((typeId) => (
-                      <div key={typeId} className="p-4 rounded-xl bg-secondary/40 border border-border/50">
-                        <Badge className="mb-3 bg-primary/15 text-primary border-primary/30 text-xs">{typeId}</Badge>
+                      <div key={typeId} className="p-4 rounded-xl bg-slate-800/40 border border-slate-800/50">
+                        <Badge className="mb-3 bg-blue-600/10 text-blue-400 border-blue-500/30 text-xs">{typeId}</Badge>
                         <div className="flex flex-wrap gap-2">
                           {(SERVICE_OPTIONS[typeId] || []).map((svc) => {
                             const active = (wizardData.services[typeId] || []).includes(svc)
                             return (
                               <button key={svc} onClick={() => toggleService(typeId, svc)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${active ? "bg-primary/15 border-primary/40 text-primary" : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/30"}`}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${active ? "bg-blue-600/10 border-blue-500/40 text-blue-400" : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-blue-500/30"}`}
                                 data-testid={`svc-${typeId}-${svc.replace(/\s+/g, "-")}`}>
                                 {active && <CheckCircle2 className="w-3 h-3 inline mr-1" />}{svc}
                               </button>
@@ -401,10 +401,10 @@ export default function OnboardingPage() {
 
               {/* STEP 4: Design */}
               {step === 4 && (
-                <Card className="glass" data-testid="step-4">
+                <Card className="bg-slate-900 border border-slate-800 rounded-2xl" data-testid="step-4">
                   <CardHeader>
                     <CardTitle className="text-xl">Design Preferences</CardTitle>
-                    <p className="text-sm text-muted-foreground">Choose your website&apos;s visual style.</p>
+                    <p className="text-sm text-slate-400">Choose your website&apos;s visual style.</p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
@@ -412,13 +412,13 @@ export default function OnboardingPage() {
                       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                         {COLOR_PRESETS.map((cp) => (
                           <button key={cp.name} onClick={() => setWizardData((d) => ({ ...d, design: { ...d.design, colorPreset: cp.name } }))}
-                            className={`p-3 rounded-xl border text-center transition-all ${wizardData.design.colorPreset === cp.name ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-primary/30"}`}
+                            className={`p-3 rounded-xl border text-center transition-all ${wizardData.design.colorPreset === cp.name ? "border-blue-500 ring-1 ring-primary/30" : "border-slate-800 hover:border-blue-500/30"}`}
                             data-testid={`color-${cp.name.replace(/\s+/g, "-")}`}>
                             <div className="flex gap-1 justify-center mb-1.5">
                               <div className="w-5 h-5 rounded-full" style={{ backgroundColor: cp.primary }} />
                               <div className="w-5 h-5 rounded-full" style={{ backgroundColor: cp.accent }} />
                             </div>
-                            <span className="text-[10px] text-muted-foreground">{cp.name}</span>
+                            <span className="text-[10px] text-slate-400">{cp.name}</span>
                           </button>
                         ))}
                       </div>
@@ -428,14 +428,14 @@ export default function OnboardingPage() {
                       <div>
                         <Label className="text-xs">Website Tagline</Label>
                         <Input value={wizardData.design.tagline} onChange={(e) => setWizardData((d) => ({ ...d, design: { ...d.design, tagline: e.target.value } }))}
-                          placeholder="Your trusted financial partner" className="bg-card" data-testid="design-tagline" />
+                          placeholder="Your trusted financial partner" className="bg-slate-900" data-testid="design-tagline" />
                       </div>
                       <div>
                         <Label className="text-xs">Style Preference</Label>
                         <div className="flex gap-2 mt-1.5">
                           {["modern", "classic", "minimal"].map((s) => (
                             <button key={s} onClick={() => setWizardData((d) => ({ ...d, design: { ...d.design, style: s } }))}
-                              className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border capitalize transition-all ${wizardData.design.style === s ? "bg-primary/15 border-primary/40 text-primary" : "bg-card border-border text-muted-foreground"}`}
+                              className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border capitalize transition-all ${wizardData.design.style === s ? "bg-blue-600/10 border-blue-500/40 text-blue-400" : "bg-slate-900 border-slate-800 text-slate-400"}`}
                               data-testid={`style-${s}`}>
                               {s}
                             </button>
@@ -448,10 +448,10 @@ export default function OnboardingPage() {
                       <Label className="text-xs">Logo URL (optional)</Label>
                       <div className="flex gap-2 mt-1.5">
                         <Input value={wizardData.design.logoUrl} onChange={(e) => setWizardData((d) => ({ ...d, design: { ...d.design, logoUrl: e.target.value } }))}
-                          placeholder="https://yourdomain.com/logo.png" className="bg-card flex-1" data-testid="design-logo" />
+                          placeholder="https://yourdomain.com/logo.png" className="bg-slate-900 flex-1" data-testid="design-logo" />
                         <Button variant="outline" size="sm" className="gap-1 text-xs shrink-0" disabled><Upload className="w-3 h-3" /> Upload</Button>
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-1">File upload coming soon. Paste a URL for now.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">File upload coming soon. Paste a URL for now.</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -459,36 +459,36 @@ export default function OnboardingPage() {
 
               {/* STEP 5: Review */}
               {step === 5 && (
-                <Card className="glass" data-testid="step-5">
+                <Card className="bg-slate-900 border border-slate-800 rounded-2xl" data-testid="step-5">
                   <CardHeader>
                     <CardTitle className="text-xl">Review & Submit</CardTitle>
-                    <p className="text-sm text-muted-foreground">Review your details before submitting.</p>
+                    <p className="text-sm text-slate-400">Review your details before submitting.</p>
                   </CardHeader>
                   <CardContent className="space-y-5">
                     {/* Contact */}
-                    <div className="p-4 rounded-xl bg-secondary/40 border border-border/50">
+                    <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-800/50">
                       <h4 className="text-sm font-medium mb-2">Contact</h4>
                       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
-                        <div><span className="text-muted-foreground">Name:</span> <span className="text-foreground">{contact.name || "—"}</span></div>
-                        <div><span className="text-muted-foreground">Email:</span> <span className="text-foreground">{contact.email || "—"}</span></div>
-                        <div><span className="text-muted-foreground">Phone:</span> <span className="text-foreground">{contact.phone || "—"}</span></div>
-                        <div><span className="text-muted-foreground">Company:</span> <span className="text-foreground">{contact.company || "—"}</span></div>
+                        <div><span className="text-slate-400">Name:</span> <span className="text-white">{contact.name || "—"}</span></div>
+                        <div><span className="text-slate-400">Email:</span> <span className="text-white">{contact.email || "—"}</span></div>
+                        <div><span className="text-slate-400">Phone:</span> <span className="text-white">{contact.phone || "—"}</span></div>
+                        <div><span className="text-slate-400">Company:</span> <span className="text-white">{contact.company || "—"}</span></div>
                       </div>
                     </div>
 
                     {/* Types */}
-                    <div className="p-4 rounded-xl bg-secondary/40 border border-border/50">
+                    <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-800/50">
                       <h4 className="text-sm font-medium mb-2">Business Types</h4>
-                      <div className="flex flex-wrap gap-2">{selectedTypes.map((t) => <Badge key={t} className="bg-primary/15 text-primary border-primary/30 text-xs">{t}</Badge>)}</div>
+                      <div className="flex flex-wrap gap-2">{selectedTypes.map((t) => <Badge key={t} className="bg-blue-600/10 text-blue-400 border-blue-500/30 text-xs">{t}</Badge>)}</div>
                     </div>
 
                     {/* Registration */}
                     {selectedTypes.map((typeId) => (
-                      <div key={typeId} className="p-4 rounded-xl bg-secondary/40 border border-border/50">
+                      <div key={typeId} className="p-4 rounded-xl bg-slate-800/40 border border-slate-800/50">
                         <h4 className="text-sm font-medium mb-2">{typeId} — Registration</h4>
                         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
                           {Object.entries(wizardData.registration[typeId] || {}).filter(([,v]) => v).map(([k, v]) => (
-                            <div key={k}><span className="text-muted-foreground capitalize">{k.replace(/_/g, " ")}:</span> <span className="text-foreground">{v}</span></div>
+                            <div key={k}><span className="text-slate-400 capitalize">{k.replace(/_/g, " ")}:</span> <span className="text-white">{v}</span></div>
                           ))}
                         </div>
                       </div>
@@ -496,19 +496,19 @@ export default function OnboardingPage() {
 
                     {/* Services */}
                     {selectedTypes.map((typeId) => (wizardData.services[typeId]?.length || 0) > 0 && (
-                      <div key={typeId} className="p-4 rounded-xl bg-secondary/40 border border-border/50">
+                      <div key={typeId} className="p-4 rounded-xl bg-slate-800/40 border border-slate-800/50">
                         <h4 className="text-sm font-medium mb-2">{typeId} — Services</h4>
                         <div className="flex flex-wrap gap-1.5">{(wizardData.services[typeId] || []).map((s) => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}</div>
                       </div>
                     ))}
 
                     {/* Design */}
-                    <div className="p-4 rounded-xl bg-secondary/40 border border-border/50">
+                    <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-800/50">
                       <h4 className="text-sm font-medium mb-2">Design</h4>
                       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
-                        <div><span className="text-muted-foreground">Color:</span> <span className="text-foreground">{wizardData.design.colorPreset}</span></div>
-                        <div><span className="text-muted-foreground">Style:</span> <span className="text-foreground capitalize">{wizardData.design.style}</span></div>
-                        {wizardData.design.tagline && <div className="sm:col-span-2"><span className="text-muted-foreground">Tagline:</span> <span className="text-foreground">{wizardData.design.tagline}</span></div>}
+                        <div><span className="text-slate-400">Color:</span> <span className="text-white">{wizardData.design.colorPreset}</span></div>
+                        <div><span className="text-slate-400">Style:</span> <span className="text-white capitalize">{wizardData.design.style}</span></div>
+                        {wizardData.design.tagline && <div className="sm:col-span-2"><span className="text-slate-400">Tagline:</span> <span className="text-white">{wizardData.design.tagline}</span></div>}
                       </div>
                     </div>
                   </CardContent>

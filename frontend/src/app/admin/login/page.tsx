@@ -29,14 +29,14 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" data-testid="admin-login-page">
+    <div className="min-h-screen bg-[#030712] flex items-center justify-center px-4" data-testid="admin-login-page">
       <Card className="glass w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center mx-auto mb-3">
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <CardTitle className="text-xl">Admin Login</CardTitle>
-          <p className="text-xs text-muted-foreground">FinSites Administration Panel</p>
+          <p className="text-xs text-slate-400">FinSites Administration Panel</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -47,11 +47,11 @@ export default function AdminLoginPage() {
             )}
             <div>
               <Label className="text-xs">Email</Label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="admin@finsites.in" className="bg-card" required data-testid="admin-email" />
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="admin@finsites.in" className="bg-slate-900" required data-testid="admin-email" />
             </div>
             <div>
               <Label className="text-xs">Password</Label>
-              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Enter password" className="bg-card" required data-testid="admin-password" />
+              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Enter password" className="bg-slate-900" required data-testid="admin-password" />
             </div>
             <Button type="submit" className="w-full font-semibold" disabled={loading} data-testid="admin-login-btn">
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null} Sign In
