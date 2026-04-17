@@ -23,3 +23,12 @@ frontend/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
 frontend/.next/dev/cache/turbopack/e0739832/00001561.sst
 frontend/.next/dev/cache/turbopack/e0739832/00001560.sst
 frontend/.next/dev/cache/turbopack/e0739832/00000471.sst
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
