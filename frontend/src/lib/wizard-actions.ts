@@ -25,6 +25,29 @@ export async function createWizardSession(data: {
   return { sessionId }
 }
 
+export async function findSessionsByEmail(email: string) {
+  if (!email?.trim()) return []
+  const supabase = createServerClient()
+  const { data, error } = await supabase
+    .from("wizard_sessions")
+    .select("session_id, business_types, current_step, contact, status, updated_at")
+    .eq("status", "in_progress")
+    .order("updated_at", { ascending: false })
+
+  if (error || !data) return []
+
+  return data.filter((s) => {
+    const c = (s.contact || {}) as Record<string, string>
+    return c.email?.toLowerCase() === email.toLowerCase().trim()
+  }).map((s) => ({
+    sessionId: s.session_id,
+    businessTypes: s.business_types || [],
+    currentStep: s.current_step || 1,
+    contactName: ((s.contact || {}) as Record<string, string>).name || "",
+    updatedAt: s.updated_at,
+  }))
+}
+
 export async function getWizardSession(sessionId: string) {
   const supabase = createServerClient()
   const { data, error } = await supabase

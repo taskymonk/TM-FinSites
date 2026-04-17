@@ -13,9 +13,17 @@ import { Progress } from "@/components/ui/progress"
 import { CheckCircle2, ArrowRight, ArrowLeft, Loader2, Shield, BarChart3, FileCheck, TrendingUp, Layers, Zap, Users, Upload, Palette, Send } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
-import { createWizardSession, updateWizardSession, submitWizard, getWizardSession } from "@/lib/wizard-actions"
+import { createWizardSession, updateWizardSession, submitWizard, getWizardSession, findSessionsByEmail } from "@/lib/wizard-actions"
 
 const STEPS = ["Business Type", "Registration", "Services", "Design", "Review"]
+
+interface ResumeSession {
+  sessionId: string
+  businessTypes: string[]
+  currentStep: number
+  contactName: string
+  updatedAt: string
+}
 
 const BIZ_TYPES = [
   { id: "MFD", name: "Mutual Fund Distributor", reg: "SEBI / AMFI", icon: BarChart3 },
@@ -97,6 +105,10 @@ export default function OnboardingPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [showResume, setShowResume] = useState(false)
+  const [resumeEmail, setResumeEmail] = useState("")
+  const [resumeSessions, setResumeSessions] = useState<ResumeSession[]>([])
+  const [resumeLoading, setResumeLoading] = useState(false)
 
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [contact, setContact] = useState({ name: "", email: "", phone: "", company: "" })
@@ -167,6 +179,32 @@ export default function OnboardingPage() {
     })
   }
 
+  async function lookupResumeSessions() {
+    if (!resumeEmail.trim()) return
+    setResumeLoading(true)
+    const sessions = await findSessionsByEmail(resumeEmail.trim())
+    setResumeSessions(sessions)
+    setResumeLoading(false)
+    if (sessions.length === 0) toast.info("No incomplete sessions found for this email.")
+  }
+
+  async function resumeSession(sid: string) {
+    setShowResume(false)
+    setLoading(true)
+    const session = await getWizardSession(sid)
+    if (session) {
+      setSessionId(sid)
+      setStep(session.current_step || 1)
+      setSelectedTypes(session.business_types || [])
+      setContact((session.contact || {}) as typeof contact)
+      setWizardData((session.data || wizardData) as WizardData)
+      toast.success("Session restored! Continue where you left off.")
+    } else {
+      toast.error("Could not load session.")
+    }
+    setLoading(false)
+  }
+
   async function handleSubmit() {
     if (!sessionId) return
     setSubmitting(true)
@@ -230,6 +268,48 @@ export default function OnboardingPage() {
                     <p className="text-sm text-muted-foreground">Choose all that apply. We&apos;ll customize your website for each.</p>
                   </CardHeader>
                   <CardContent>
+                    {/* Resume Banner */}
+                    {!showResume && step === 1 && (
+                      <div className="mb-5 p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between" data-testid="resume-banner">
+                        <p className="text-xs text-muted-foreground">Already started? <span className="text-foreground font-medium">Resume where you left off.</span></p>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs text-primary hover:text-primary" onClick={() => setShowResume(true)} data-testid="resume-open-btn">Resume Wizard</Button>
+                      </div>
+                    )}
+
+                    {showResume && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mb-5 p-4 rounded-xl bg-card border border-border" data-testid="resume-panel">
+                        <h4 className="text-sm font-medium mb-2">Find Your Session</h4>
+                        <div className="flex gap-2 mb-3">
+                          <Input value={resumeEmail} onChange={(e) => setResumeEmail(e.target.value)} placeholder="Enter your email" className="bg-secondary text-sm" data-testid="resume-email-input"
+                            onKeyDown={(e) => e.key === "Enter" && lookupResumeSessions()} />
+                          <Button size="sm" onClick={lookupResumeSessions} disabled={resumeLoading || !resumeEmail.trim()} className="text-xs shrink-0" data-testid="resume-lookup-btn">
+                            {resumeLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Look Up"}
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => { setShowResume(false); setResumeSessions([]) }} className="text-xs shrink-0 text-muted-foreground">Cancel</Button>
+                        </div>
+                        {resumeSessions.length > 0 && (
+                          <div className="space-y-2" data-testid="resume-sessions-list">
+                            {resumeSessions.map((s) => (
+                              <button key={s.sessionId} onClick={() => resumeSession(s.sessionId)}
+                                className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary/60 border border-border hover:border-primary/30 transition-all text-left"
+                                data-testid={`resume-session-${s.sessionId}`}>
+                                <div>
+                                  <div className="text-sm font-medium text-foreground">{s.contactName || "Unnamed"}</div>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    {s.businessTypes.map((bt) => <Badge key={bt} className="text-[9px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30">{bt}</Badge>)}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-[10px] text-muted-foreground">Step {s.currentStep} of 5</div>
+                                  <div className="text-[10px] text-muted-foreground">{new Date(s.updatedAt).toLocaleDateString()}</div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+
                     <div className="grid sm:grid-cols-2 gap-3 mb-6">
                       {BIZ_TYPES.map((bt) => {
                         const active = selectedTypes.includes(bt.id)
