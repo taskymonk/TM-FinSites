@@ -1,7 +1,6 @@
 node_modules/
 build/
-.env
-.env.local
+.next/
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -11,19 +10,9 @@ dist/
 *.log
 /test_reports/
 /memory/
--e 
-# Environment and credential files
 .env
 .env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
+.env.local
 *.env
 credentials.json
 *.pem
@@ -31,156 +20,6 @@ credentials.json
 .credentials
 frontend/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
 frontend/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
-frontend/.next/dev/cache/turbopack/e0739832/00000222.sst
-frontend/.next/dev/cache/turbopack/e0739832/00000779.sst
-frontend/.next/dev/cache/turbopack/e0739832/00001238.sst
-frontend/.next/dev/cache/turbopack/e0739832/00001890.sst
-frontend/.next/dev/cache/turbopack/e0739832/00001889.sst
-frontend/.next/dev/cache/turbopack/e0739832/00000101.sst
-frontend/.next/dev/cache/turbopack/e0739832/00000471.sst
 frontend/.next/dev/cache/turbopack/e0739832/00001561.sst
 frontend/.next/dev/cache/turbopack/e0739832/00001560.sst
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
+frontend/.next/dev/cache/turbopack/e0739832/00000471.sst
