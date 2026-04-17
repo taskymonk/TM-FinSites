@@ -24,7 +24,8 @@ export default function AdminLoginPage() {
     if ("error" in result) {
       setError(result.error || "Login failed")
     } else {
-      router.push("/admin/dashboard")
+      // Hard redirect to ensure cookie is picked up
+      window.location.href = "/admin/dashboard"
     }
   }
 

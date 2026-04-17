@@ -34,17 +34,17 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 }
 
 const BIZ_TYPES = [
-  { name: "Mutual Fund Distributor", short: "MFD", reg: "SEBI / AMFI", icon: BarChart3, color: "bg-blue-500" },
-  { name: "Insurance Agent / Broker", short: "Insurance", reg: "IRDAI", icon: Shield, color: "bg-emerald-500" },
-  { name: "Investment Adviser", short: "RIA", reg: "SEBI", icon: FileCheck, color: "bg-sky-500" },
-  { name: "Portfolio Management", short: "PMS", reg: "SEBI", icon: TrendingUp, color: "bg-violet-500" },
-  { name: "Stock Broker / AP", short: "Stock Broker", reg: "SEBI / NSE / BSE", icon: Layers, color: "bg-amber-500" },
-  { name: "Specialised Investment Fund", short: "SIF", reg: "SEBI / MF", icon: Zap, color: "bg-rose-500" },
-  { name: "NPS Distributor", short: "NPS", reg: "PFRDA", icon: Users, color: "bg-indigo-500" },
+  { name: "Mutual Fund Distributor", short: "MFD", reg: "SEBI / AMFI", icon: BarChart3, color: "bg-blue-500", href: "/solutions/mfd" },
+  { name: "Insurance Agent / Broker", short: "Insurance", reg: "IRDAI", icon: Shield, color: "bg-emerald-500", href: "/solutions/insurance" },
+  { name: "Investment Adviser", short: "RIA", reg: "SEBI", icon: FileCheck, color: "bg-sky-500", href: "/solutions/ria" },
+  { name: "Portfolio Management", short: "PMS", reg: "SEBI", icon: TrendingUp, color: "bg-violet-500", href: "/solutions/pms" },
+  { name: "Stock Broker / AP", short: "Stock Broker", reg: "SEBI / NSE / BSE", icon: Layers, color: "bg-amber-500", href: "/solutions/stock-broker" },
+  { name: "Specialised Investment Fund", short: "SIF", reg: "SEBI / MF", icon: Zap, color: "bg-rose-500", href: "/solutions/sif" },
+  { name: "NPS Distributor", short: "NPS", reg: "PFRDA", icon: Users, color: "bg-indigo-500", href: "/solutions/nps" },
 ]
 
 const FEATURES = [
-  { icon: Scan, title: "Smart Compliance Audit", desc: "Scan any existing website instantly. Get a detailed compliance scorecard with 78+ regulatory checks." },
+  { icon: Scan, title: "Smart Compliance Audit", desc: "Scan any existing website instantly. Get a detailed compliance scorecard with 148 regulatory checks." },
   { icon: Layers, title: "Guided Onboarding Wizard", desc: "Step-by-step data collection with smart validation for all 7 business types and their combinations." },
   { icon: Shield, title: "Auto-Compliance Engine", desc: "Every disclaimer, disclosure, and regulatory requirement baked in automatically. Zero guesswork." },
   { icon: Users, title: "7 Business Types", desc: "MFD, Insurance, RIA, PMS, Stock Broker/AP, SIF, NPS Distributor including valid combinations." },
@@ -88,7 +88,7 @@ export default function LandingPage() {
               <span className="text-gradient">Financial Professionals</span>
             </h1>
             <p className="text-base sm:text-lg text-slate-400 max-w-2xl mb-8 leading-relaxed">
-              Every SEBI, AMFI, IRDAI &amp; PFRDA regulation built right in. Launch your professional, regulator-aligned website in days. 78+ compliance checks. 7 business types.
+              Every SEBI, AMFI, IRDAI &amp; PFRDA regulation built right in. Launch your professional, regulator-aligned website in days. 148 compliance checks. 7 business types.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/audit"><Button size="lg" className="gap-2 font-semibold text-base px-6 bg-blue-600 hover:bg-blue-500 text-white" data-testid="hero-free-audit"><Scan className="w-4 h-4" /> Free Compliance Audit</Button></Link>
@@ -156,14 +156,17 @@ export default function LandingPage() {
           </motion.div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {BIZ_TYPES.map((bt, i) => (
-              <motion.div key={i} variants={fadeUp} className="group relative p-6 rounded-2xl glass-card overflow-hidden transition-all duration-300">
-                <div className={`absolute top-0 left-0 w-full h-0.5 ${bt.color} opacity-50 group-hover:opacity-100 transition-opacity`} />
-                <div className={`w-10 h-10 rounded-xl ${bt.color} flex items-center justify-center mb-4 opacity-80 group-hover:opacity-100`}>
-                  <bt.icon className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="font-bold mb-1 text-white">{bt.name}</h3>
-                <p className="text-xs text-slate-500 font-mono">{bt.reg}</p>
-              </motion.div>
+              <Link key={i} href={bt.href}>
+                <motion.div variants={fadeUp} className="group relative p-6 rounded-2xl glass-card overflow-hidden transition-all duration-300 cursor-pointer h-full">
+                  <div className={`absolute top-0 left-0 w-full h-0.5 ${bt.color} opacity-50 group-hover:opacity-100 transition-opacity`} />
+                  <div className={`w-10 h-10 rounded-xl ${bt.color} flex items-center justify-center mb-4 opacity-80 group-hover:opacity-100`}>
+                    <bt.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="font-bold mb-1 text-white">{bt.name}</h3>
+                  <p className="text-xs text-slate-500 font-mono">{bt.reg}</p>
+                  <span className="text-[10px] text-blue-400 mt-2 inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">Learn more <ArrowRight className="w-3 h-3" /></span>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </AnimSection>
