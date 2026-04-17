@@ -8,13 +8,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Shield, LogOut, FileText, Users, BarChart3, Mail, Loader2, Search, RefreshCw, ChevronDown, Globe, Scan, Trash2, Eye, Download, Pencil, X, Home, Copy, ChevronRight } from "lucide-react"
+import { Shield, LogOut, FileText, Users, BarChart3, Mail, Loader2, Search, RefreshCw, ChevronDown, Globe, Scan, Trash2, Eye, Download, Pencil, X, Home, Copy, ChevronRight, TrendingUp } from "lucide-react"
 import { toast } from "sonner"
 import {
   getAdminSession, adminLogout, getAdminStats, getSubmissions, updateSubmissionStatus,
   getAuditHistory, deleteAudit, clearAuditHistory, getSubmissionDetail, updateSubmissionData,
   deleteSubmission, generateSubmissionMarkdown
 } from "@/lib/admin-actions"
+import { generateWebsitePRD } from "@/lib/llm-actions"
 
 interface AdminUser { id: string; email: string; name: string; role: string }
 interface Stats { totalSubmissions: number; submittedCount: number; inProgressCount: number; completedCount: number; totalWizardSessions: number; totalAudits: number; totalEnterpriseContacts: number }
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "submissions", label: "Submissions", icon: FileText },
   { id: "audits", label: "Audit History", icon: Scan },
+  { id: "analytics", label: "Analytics", icon: TrendingUp },
 ]
 
 export default function AdminDashboard() {
@@ -61,6 +63,8 @@ export default function AdminDashboard() {
   // Markdown viewer
   const [mdOpen, setMdOpen] = useState(false)
   const [mdContent, setMdContent] = useState("")
+  const [mdTitle, setMdTitle] = useState("Client Website Brief (Markdown)")
+  const [prdGenerating, setPrdGenerating] = useState(false)
 
   // Confirm dialog
   const [confirmAction, setConfirmAction] = useState<{ type: string; id?: string; message: string } | null>(null)
@@ -118,7 +122,16 @@ export default function AdminDashboard() {
   async function viewMarkdown(subId: string) {
     const r = await generateSubmissionMarkdown(subId)
     if ("error" in r) toast.error(r.error as string)
-    else { setMdContent(r.markdown as string); setMdOpen(true) }
+    else { setMdContent(r.markdown as string); setMdTitle("Client Website Brief (Markdown)"); setMdOpen(true) }
+  }
+
+  async function generatePRD(subId: string) {
+    setPrdGenerating(true)
+    toast.info("Generating PRD with AI... This may take 15-30 seconds.")
+    const r = await generateWebsitePRD(subId)
+    setPrdGenerating(false)
+    if ("error" in r) toast.error(r.error as string)
+    else { setMdContent(r.prd as string); setMdTitle("Generated Website PRD"); setMdOpen(true); toast.success("PRD generated!") }
   }
 
   async function handleConfirm() {
@@ -299,6 +312,108 @@ export default function AdminDashboard() {
               </div>
             </>
           )}
+
+          {/* ANALYTICS PAGE */}
+          {page === "analytics" && (
+            <>
+              <h1 className="text-xl font-bold text-white mb-6">Analytics</h1>
+              {stats && (
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Submission Breakdown */}
+                  <Card className="bg-slate-900 border-slate-800">
+                    <CardHeader><CardTitle className="text-sm text-white">Submission Status Breakdown</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {[
+                          { label: "Submitted", count: stats.submittedCount, color: "bg-blue-500", pct: stats.totalSubmissions > 0 ? Math.round((stats.submittedCount / stats.totalSubmissions) * 100) : 0 },
+                          { label: "In Progress", count: stats.inProgressCount, color: "bg-amber-500", pct: stats.totalSubmissions > 0 ? Math.round((stats.inProgressCount / stats.totalSubmissions) * 100) : 0 },
+                          { label: "Completed", count: stats.completedCount, color: "bg-emerald-500", pct: stats.totalSubmissions > 0 ? Math.round((stats.completedCount / stats.totalSubmissions) * 100) : 0 },
+                        ].map((s) => (
+                          <div key={s.label}>
+                            <div className="flex items-center justify-between mb-1"><span className="text-xs text-slate-400">{s.label}</span><span className="text-xs font-bold text-white">{s.count} ({s.pct}%)</span></div>
+                            <div className="h-2 bg-slate-800 rounded-full overflow-hidden"><div className={`h-full ${s.color} rounded-full transition-all`} style={{ width: `${s.pct}%` }} /></div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Business Type Distribution */}
+                  <Card className="bg-slate-900 border-slate-800">
+                    <CardHeader><CardTitle className="text-sm text-white">Business Type Distribution</CardTitle></CardHeader>
+                    <CardContent>
+                      {(() => {
+                        const typeCounts: Record<string, number> = {}
+                        submissions.forEach((s) => (s.business_types || []).forEach((bt) => { typeCounts[bt] = (typeCounts[bt] || 0) + 1 }))
+                        const total = Object.values(typeCounts).reduce((a, b) => a + b, 0) || 1
+                        const colors = ["bg-blue-500", "bg-emerald-500", "bg-sky-500", "bg-violet-500", "bg-amber-500", "bg-rose-500", "bg-indigo-500"]
+                        return (
+                          <div className="space-y-3">
+                            {Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).map(([type, count], i) => (
+                              <div key={type}>
+                                <div className="flex items-center justify-between mb-1"><span className="text-xs text-slate-400">{type}</span><span className="text-xs font-bold text-white">{count}</span></div>
+                                <div className="h-2 bg-slate-800 rounded-full overflow-hidden"><div className={`h-full ${colors[i % colors.length]} rounded-full`} style={{ width: `${Math.round((count / total) * 100)}%` }} /></div>
+                              </div>
+                            ))}
+                            {Object.keys(typeCounts).length === 0 && <p className="text-sm text-slate-500 text-center py-4">No data yet</p>}
+                          </div>
+                        )
+                      })()}
+                    </CardContent>
+                  </Card>
+
+                  {/* Audit Score Distribution */}
+                  <Card className="bg-slate-900 border-slate-800">
+                    <CardHeader><CardTitle className="text-sm text-white">Audit Score Distribution</CardTitle></CardHeader>
+                    <CardContent>
+                      {(() => {
+                        const good = audits.filter((a) => a.overall_score >= 80).length
+                        const mid = audits.filter((a) => a.overall_score >= 50 && a.overall_score < 80).length
+                        const poor = audits.filter((a) => a.overall_score < 50).length
+                        const total = audits.length || 1
+                        const avg = audits.length > 0 ? Math.round(audits.reduce((s, a) => s + a.overall_score, 0) / audits.length) : 0
+                        return (
+                          <div>
+                            <div className="text-center mb-4"><span className="text-3xl font-black text-white">{avg}</span><span className="text-sm text-slate-500 ml-1">avg score</span></div>
+                            <div className="space-y-3">
+                              {[{ label: "Good (80+)", count: good, color: "bg-emerald-500" }, { label: "Needs Work (50-79)", count: mid, color: "bg-amber-500" }, { label: "Poor (<50)", count: poor, color: "bg-red-500" }].map((s) => (
+                                <div key={s.label}>
+                                  <div className="flex items-center justify-between mb-1"><span className="text-xs text-slate-400">{s.label}</span><span className="text-xs font-bold text-white">{s.count} ({Math.round((s.count / total) * 100)}%)</span></div>
+                                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden"><div className={`h-full ${s.color} rounded-full`} style={{ width: `${Math.round((s.count / total) * 100)}%` }} /></div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })()}
+                    </CardContent>
+                  </Card>
+
+                  {/* Quick Stats */}
+                  <Card className="bg-slate-900 border-slate-800">
+                    <CardHeader><CardTitle className="text-sm text-white">Quick Metrics</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        {[
+                          { label: "Total Submissions", value: stats.totalSubmissions, color: "text-blue-400" },
+                          { label: "Active Sessions", value: stats.totalWizardSessions, color: "text-emerald-400" },
+                          { label: "Total Audits", value: stats.totalAudits, color: "text-amber-400" },
+                          { label: "Enterprise Leads", value: stats.totalEnterpriseContacts, color: "text-purple-400" },
+                          { label: "Completion Rate", value: stats.totalSubmissions > 0 ? `${Math.round((stats.completedCount / stats.totalSubmissions) * 100)}%` : "0%", color: "text-emerald-400" },
+                          { label: "Avg Audit Score", value: audits.length > 0 ? Math.round(audits.reduce((s, a) => s + a.overall_score, 0) / audits.length) : 0, color: "text-amber-400" },
+                        ].map((m) => (
+                          <div key={m.label} className="p-3 rounded-xl bg-slate-800/50">
+                            <div className={`text-xl font-black ${m.color}`}>{m.value}</div>
+                            <div className="text-[10px] text-slate-500">{m.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
 
@@ -386,8 +501,11 @@ export default function AdminDashboard() {
                   </div>
                 )}
                 {/* Actions */}
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-2 flex-wrap">
                   <Button size="sm" variant="outline" className="gap-1.5 text-xs border-slate-700 text-slate-300" onClick={() => viewMarkdown(d.submission_id as string)} data-testid="detail-md-btn"><Download className="w-3 h-3" /> Export Markdown</Button>
+                  <Button size="sm" className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white" onClick={() => generatePRD(d.submission_id as string)} disabled={prdGenerating} data-testid="detail-prd-btn">
+                    {prdGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />} Generate PRD
+                  </Button>
                   <Button size="sm" variant="outline" className="gap-1.5 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10" onClick={() => setConfirmAction({ type: "delete_submission", id: d.submission_id as string, message: `Delete ${(d as Record<string, string>).reference_number}?` })} data-testid="detail-delete-btn"><Trash2 className="w-3 h-3" /> Delete</Button>
                 </div>
               </div>
@@ -400,7 +518,7 @@ export default function AdminDashboard() {
       <Dialog open={mdOpen} onOpenChange={setMdOpen}>
         <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white max-h-[85vh] overflow-y-auto" data-testid="md-dialog">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">Client Website Brief (Markdown)
+            <DialogTitle className="flex items-center justify-between">{mdTitle}
               <Button size="sm" variant="outline" className="text-xs border-slate-700 text-slate-300 gap-1" onClick={() => { navigator.clipboard.writeText(mdContent); toast.success("Copied!") }} data-testid="copy-md-btn"><Copy className="w-3 h-3" /> Copy</Button>
             </DialogTitle>
           </DialogHeader>

@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Scan, CheckCircle2, XCircle, AlertTriangle, Shield, Globe, ArrowRight, Loader2, RefreshCw, Pencil } from "lucide-react"
+import { Scan, CheckCircle2, XCircle, AlertTriangle, Shield, Globe, ArrowRight, Loader2, RefreshCw, Pencil, Download } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { runAudit as runAuditAction, runAuditWithTypes as runAuditWithTypesAction } from "@/lib/actions"
+import { generateAuditPDF } from "@/lib/pdf-generator"
 
 const ALL_BIZ_TYPES = ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"]
 
@@ -232,13 +233,18 @@ export default function AuditPage() {
               </div>
 
               {/* CTA - Prefilled onboarding link */}
-              <div className="mt-8 text-center">
+              <div className="mt-8 text-center space-y-3">
                 <p className="text-slate-400 mb-4">Ready to fix these compliance issues?</p>
-                <Link href={onboardingLink}>
-                  <Button size="lg" className="gap-2 font-semibold bg-blue-600 hover:bg-blue-500 text-white" data-testid="audit-get-started-btn">
-                    Build Your Compliant Site <ArrowRight className="w-4 h-4" />
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Button size="lg" variant="outline" className="gap-2 font-semibold border-slate-700 text-slate-300 hover:bg-white/5" onClick={() => generateAuditPDF(result)} data-testid="audit-pdf-btn">
+                    <Download className="w-4 h-4" /> Download PDF Report
                   </Button>
-                </Link>
+                  <Link href={onboardingLink}>
+                    <Button size="lg" className="gap-2 font-semibold bg-blue-600 hover:bg-blue-500 text-white" data-testid="audit-get-started-btn">
+                      Build Your Compliant Site <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </motion.section>
           )}
