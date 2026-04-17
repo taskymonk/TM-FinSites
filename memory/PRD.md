@@ -11,19 +11,18 @@ Marketing platform for Indian financial professionals. Compliance audit, onboard
 
 ## Implemented (April 17, 2026)
 - [x] Landing page (Hero, Stats, Features, Business Types, How-It-Works, Pricing, FAQ)
-- [x] Compliance Audit (`/audit`): 78 rules, 13 categories, editable types + rescan
+- [x] Compliance Audit (`/audit`): 78 rules, 13 categories, editable types + rescan, **top-level filter buttons** (Failed/Passed/All)
+- [x] **Audit-to-Onboarding Prefill**: CTA passes detected types + URL to wizard, green prefill banner confirms
 - [x] Plans (`/plans`): 3 Supabase-backed plans, enterprise dialog
-- [x] 5-Step Wizard (`/onboarding`): Types, registration, services, design, review
-- [x] Resume Wizard (email lookup for incomplete sessions)
+- [x] 5-Step Wizard (`/onboarding`): Types, registration, services, design, review. Resume wizard. Audit prefill.
 - [x] Confirmation page (`/confirmation/[ref]`)
 - [x] Setup page (`/setup`): Copy-able SQL schema
-- [x] Dark-only UI (no theme toggle)
-- [x] **Admin Dashboard** (`/admin/dashboard`):
-  - Left sidebar navigation (Dashboard, Submissions, Audit History)
-  - Dashboard: Stats cards + recent submissions
-  - Submissions: Top-level filter buttons, search, view/edit detail dialog, export Markdown, delete
-  - Audit History: Search, individual delete, clear all history
-  - Submission detail: Edit contact info, view registration/services/design data, export as client brief MD
+- [x] Admin Dashboard (`/admin/dashboard`):
+  - Left sidebar (Dashboard, Submissions, Audit History)
+  - **Top-level filter buttons** on submissions
+  - View/edit submission detail dialog
+  - Export as Markdown (client website brief)
+  - Delete submissions/audits, clear all history
 
 ## Backlog
 - P1: Marketing sub-pages per business type, Dynamic LLM for PRD, PDF audit export, Expand to 148+ rules
