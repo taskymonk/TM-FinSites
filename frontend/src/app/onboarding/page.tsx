@@ -141,7 +141,7 @@ export default function OnboardingPage() {
 
       const result = await createWizardSession({ planId, auditId, businessTypes: types })
       if ("sessionId" in result) {
-        setSessionId(result.sessionId)
+        setSessionId(result.sessionId || null)
         if (types.length) setSelectedTypes(types)
         if (auditUrl) {
           setWizardData((prev) => ({
