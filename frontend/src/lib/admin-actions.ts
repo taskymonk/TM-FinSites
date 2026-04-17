@@ -152,3 +152,131 @@ export async function updateSubmissionStatus(submissionId: string, newStatus: st
   if (error) return { error: error.message }
   return { success: true }
 }
+
+export async function getSubmissionDetail(submissionId: string) {
+  const session = await getAdminSession()
+  if (!session) return { error: "Unauthorized" }
+
+  const supabase = createServerClient()
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .eq("submission_id", submissionId)
+    .single()
+
+  if (error || !data) return { error: "Submission not found" }
+  return data
+}
+
+export async function updateSubmissionData(submissionId: string, updates: {
+  client_name?: string
+  client_email?: string
+  client_phone?: string
+  business_types?: string[]
+  data?: Record<string, unknown>
+}) {
+  const session = await getAdminSession()
+  if (!session) return { error: "Unauthorized" }
+
+  const supabase = createServerClient()
+  const payload: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  if (updates.client_name !== undefined) payload.client_name = updates.client_name
+  if (updates.client_email !== undefined) payload.client_email = updates.client_email
+  if (updates.client_phone !== undefined) payload.client_phone = updates.client_phone
+  if (updates.business_types) payload.business_types = updates.business_types
+  if (updates.data) payload.data = updates.data
+
+  const { error } = await supabase
+    .from("submissions")
+    .update(payload)
+    .eq("submission_id", submissionId)
+
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+export async function deleteSubmission(submissionId: string) {
+  const session = await getAdminSession()
+  if (!session) return { error: "Unauthorized" }
+
+  const supabase = createServerClient()
+  const { error } = await supabase.from("submissions").delete().eq("submission_id", submissionId)
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+export async function deleteAudit(auditId: string) {
+  const session = await getAdminSession()
+  if (!session) return { error: "Unauthorized" }
+
+  const supabase = createServerClient()
+  const { error } = await supabase.from("audits").delete().eq("audit_id", auditId)
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+export async function clearAuditHistory() {
+  const session = await getAdminSession()
+  if (!session) return { error: "Unauthorized" }
+
+  const supabase = createServerClient()
+  const { error } = await supabase.from("audits").delete().neq("audit_id", "")
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+export async function generateSubmissionMarkdown(submissionId: string) {
+  const session = await getAdminSession()
+  if (!session) return { error: "Unauthorized" }
+
+  const supabase = createServerClient()
+  const { data: sub, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .eq("submission_id", submissionId)
+    .single()
+
+  if (error || !sub) return { error: "Not found" }
+
+  const d = (sub.data || {}) as Record<string, unknown>
+  const reg = (d.registration || {}) as Record<string, Record<string, string>>
+  const svc = (d.services || {}) as Record<string, string[]>
+  const design = (d.design || {}) as Record<string, string>
+
+  let md = `# Client Website Brief\n\n`
+  md += `## Contact Information\n`
+  md += `- **Name:** ${sub.client_name || "—"}\n`
+  md += `- **Email:** ${sub.client_email || "—"}\n`
+  md += `- **Phone:** ${sub.client_phone || "—"}\n`
+  md += `- **Reference:** ${sub.reference_number}\n`
+  md += `- **Submitted:** ${new Date(sub.submitted_at).toLocaleString()}\n`
+  md += `- **Status:** ${sub.status}\n\n`
+
+  md += `## Business Types\n`
+  for (const bt of (sub.business_types || [])) { md += `- ${bt}\n` }
+  md += `\n`
+
+  md += `## Registration Details\n`
+  for (const [type, fields] of Object.entries(reg)) {
+    md += `### ${type}\n`
+    for (const [key, val] of Object.entries(fields || {})) {
+      if (val) md += `- **${key.replace(/_/g, " ")}:** ${val}\n`
+    }
+    md += `\n`
+  }
+
+  md += `## Services\n`
+  for (const [type, services] of Object.entries(svc)) {
+    md += `### ${type}\n`
+    for (const s of (services || [])) { md += `- ${s}\n` }
+    md += `\n`
+  }
+
+  md += `## Design Preferences\n`
+  if (design.colorPreset) md += `- **Color Scheme:** ${design.colorPreset}\n`
+  if (design.style) md += `- **Style:** ${design.style}\n`
+  if (design.tagline) md += `- **Tagline:** ${design.tagline}\n`
+  if (design.logoUrl) md += `- **Logo URL:** ${design.logoUrl}\n`
+
+  return { markdown: md }
+}
