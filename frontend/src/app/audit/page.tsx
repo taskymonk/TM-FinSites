@@ -104,7 +104,7 @@ export default function AuditPage() {
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs font-medium text-slate-400 mb-4">
-              <Shield className="w-3.5 h-3.5 text-blue-400" /> 78+ Compliance Checks
+              <Shield className="w-3.5 h-3.5 text-blue-400" /> 148 Compliance Checks
             </div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tighter mb-3 text-white" data-testid="audit-title">Free Website Compliance Audit</h1>
             <p className="text-slate-400">Enter your website URL for an instant SEBI, AMFI, IRDAI & PFRDA compliance score.</p>

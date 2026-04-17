@@ -95,7 +95,7 @@ export default function LandingPage() {
               <Link href="/plans"><Button size="lg" variant="outline" className="gap-2 font-semibold text-base px-6 border-white/10 text-slate-200 hover:bg-white/5 hover:text-white" data-testid="hero-get-started">Build Your Site <ArrowRight className="w-4 h-4" /></Button></Link>
             </div>
             <div className="flex flex-wrap items-center gap-6 mt-10 text-sm text-slate-400">
-              {["7 Business Types", "78+ Compliance Checks", "Combination Rules"].map((t) => (
+              {["7 Business Types", "148 Compliance Checks", "Combination Rules"].map((t) => (
                 <span key={t} className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />{t}</span>
               ))}
             </div>

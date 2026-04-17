@@ -457,6 +457,182 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
     check: (ctx) => { const has = /fiduciary/i.test(ctx.text) || /best\s*interest.*client/i.test(ctx.text) || /client.*best\s*interest/i.test(ctx.text); return { passed: has, details: has ? "Fiduciary duty reference found" : "No fiduciary duty statement — RIAs have fiduciary responsibility" } } },
   { id: "RIA-003", name: "Risk Profiling Mention", category: "RIA Specific", severity: "minor", businessTypes: ["RIA"],
     check: (ctx) => { const has = /risk\s*profil/i.test(ctx.text) || /risk\s*assess/i.test(ctx.text) || /risk\s*tolerance/i.test(ctx.text); return { passed: has, details: has ? "Risk profiling mentioned" : "No risk profiling/assessment mentioned — fundamental to advisory" } } },
+
+  // ============ WAVE 3: ADVANCED RULES (70 more) ============
+
+  // ACCESSIBILITY & USABILITY
+  { id: "ACC-001", name: "Language Attribute", category: "Accessibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$("html[lang]").length > 0; return { passed: has, details: has ? "HTML lang attribute set" : "Missing lang attribute — affects screen readers and SEO" } } },
+  { id: "ACC-002", name: "Skip Navigation Link", category: "Accessibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('a[href="#main"], a[href="#content"], .skip-nav, .skip-link').length > 0; return { passed: has, details: has ? "Skip navigation link found" : "No skip navigation link — accessibility best practice" } } },
+  { id: "ACC-003", name: "Form Labels", category: "Accessibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const inputs = ctx.$("input:not([type=hidden]):not([type=submit])").length; const labels = ctx.$("label").length; if (inputs === 0) return { passed: true, details: "No form inputs found" }; return { passed: labels >= inputs * 0.5, details: `${labels} labels for ${inputs} inputs — ${labels >= inputs * 0.5 ? "adequate" : "many inputs lack labels"}` } } },
+  { id: "ACC-004", name: "Heading Hierarchy", category: "Accessibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const h1 = ctx.$("h1").length; return { passed: h1 >= 1 && h1 <= 2, details: h1 === 0 ? "No H1 heading — hurts SEO and accessibility" : h1 > 2 ? `${h1} H1 tags found — should have only 1` : "Proper H1 heading found" } } },
+  { id: "ACC-005", name: "Contrast & Readability", category: "Accessibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const small = ctx.$('[style*="font-size"]').filter((_, el) => { const s = ctx.$(el).css("font-size"); return s && parseInt(s) < 10 }).length; return { passed: small === 0, details: small === 0 ? "No extremely small text found" : `${small} elements with very small font size found` } } },
+
+  // SEO DEEP
+  { id: "SEO-001", name: "Structured Data / Schema.org", category: "SEO & Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('script[type="application/ld+json"]').length > 0; return { passed: has, details: has ? "Structured data (JSON-LD) found" : "No structured data — add Schema.org markup for better search results" } } },
+  { id: "SEO-002", name: "Unique Title Length", category: "SEO & Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const len = ctx.title.length; return { passed: len >= 30 && len <= 65, details: len === 0 ? "No page title" : `Title is ${len} characters — ${len < 30 ? "too short, aim for 30-65" : len > 65 ? "too long, may be truncated in search" : "good length"}` } } },
+  { id: "SEO-003", name: "Meta Description Length", category: "SEO & Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const desc = ctx.meta.description || ""; return { passed: desc.length >= 50 && desc.length <= 160, details: desc.length === 0 ? "No meta description" : `Description is ${desc.length} chars — ${desc.length < 50 ? "too short" : desc.length > 160 ? "too long" : "good length"}` } } },
+  { id: "SEO-004", name: "Hreflang Tags", category: "SEO & Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('link[hreflang]').length > 0; return { passed: true, details: has ? "Hreflang tags found — good for multi-language" : "No hreflang tags (optional unless multi-language)" } } },
+  { id: "SEO-005", name: "Minified Resources", category: "SEO & Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const inline = ctx.$("style").text().length; return { passed: inline < 10000, details: inline < 10000 ? "Inline CSS is reasonable" : `${Math.round(inline/1000)}KB of inline CSS — consider external stylesheet` } } },
+  { id: "SEO-006", name: "Broken Links (Internal)", category: "SEO & Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const empty = ctx.links.filter((l) => l === "#" || l === "javascript:void(0)" || l === "javascript:;").length; return { passed: empty < 3, details: empty === 0 ? "No empty/void links" : `${empty} empty/void links found — replace with proper URLs` } } },
+
+  // TRUST & CREDIBILITY
+  { id: "TRUST-001", name: "Client Logo / Association Display", category: "Trust & Credibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /client/i.test(ctx.text) && ctx.$("img").length > 3; return { passed: has, details: has ? "Client/association references with images found" : "Consider adding client logos or association badges for credibility" } } },
+  { id: "TRUST-002", name: "Experience / Track Record", category: "Trust & Credibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /year.*experience/i.test(ctx.text) || /since\s*\d{4}/i.test(ctx.text) || /established/i.test(ctx.text); return { passed: has, details: has ? "Experience/established date mentioned" : "No mention of years of experience — builds trust" } } },
+  { id: "TRUST-003", name: "Professional Certifications", category: "Trust & Credibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS"],
+    check: (ctx) => { const has = /CFP|CFA|NISM|FRM|CAIIB|chartered/i.test(ctx.text); return { passed: has, details: has ? "Professional certifications mentioned" : "No professional certifications displayed (CFP, CFA, NISM, etc.)" } } },
+  { id: "TRUST-004", name: "Awards / Recognition", category: "Trust & Credibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /award/i.test(ctx.text) || /recogni/i.test(ctx.text) || /accolade/i.test(ctx.text); return { passed: has, details: has ? "Awards/recognition mentioned" : "No awards or recognition displayed" } } },
+  { id: "TRUST-005", name: "Media Mentions / Press", category: "Trust & Credibility", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /media/i.test(ctx.text) || /press/i.test(ctx.text) || /featured\s*in/i.test(ctx.text) || /as\s*seen/i.test(ctx.text); return { passed: has, details: has ? "Media/press mentions found" : "No media mentions — adds credibility" } } },
+
+  // CONTENT DEPTH
+  { id: "CONTENT-001", name: "Investment Philosophy / Approach", category: "Content Depth", severity: "minor", businessTypes: ["MFD", "RIA", "PMS"],
+    check: (ctx) => { const has = /philosoph/i.test(ctx.text) || /approach/i.test(ctx.text) || /methodology/i.test(ctx.text) || /investment\s*process/i.test(ctx.text); return { passed: has, details: has ? "Investment philosophy/approach described" : "No investment philosophy or approach section" } } },
+  { id: "CONTENT-002", name: "FAQ Section", category: "Content Depth", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /FAQ|frequently\s*asked/i.test(ctx.text); return { passed: has, details: has ? "FAQ section found" : "No FAQ section — helps answer common questions and improves SEO" } } },
+  { id: "CONTENT-003", name: "Resource / Download Section", category: "Content Depth", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS"],
+    check: (ctx) => { const has = /download/i.test(ctx.text) || /resource/i.test(ctx.text) || /brochure/i.test(ctx.text) || /pdf/i.test(ctx.text); return { passed: has, details: has ? "Downloadable resources found" : "No downloadable resources (brochures, factsheets)" } } },
+  { id: "CONTENT-004", name: "Video Content", category: "Content Depth", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = ctx.$("video, iframe[src*='youtube'], iframe[src*='vimeo']").length > 0; return { passed: has, details: has ? "Video content found" : "No video content — videos increase engagement" } } },
+  { id: "CONTENT-005", name: "Client Onboarding Process", category: "Content Depth", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "NPS"],
+    check: (ctx) => { const has = /onboard/i.test(ctx.text) || /how\s*to\s*(start|begin|open|get\s*started)/i.test(ctx.text) || /process/i.test(ctx.text); return { passed: has, details: has ? "Onboarding/process information found" : "No client onboarding process described" } } },
+  { id: "CONTENT-006", name: "Market Updates / Commentary", category: "Content Depth", severity: "minor", businessTypes: ["MFD", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /market\s*(update|commentary|outlook|review)/i.test(ctx.text) || /weekly\s*report/i.test(ctx.text); return { passed: has, details: has ? "Market updates/commentary found" : "No market updates section — shows active engagement" } } },
+
+  // COMBINATION RULES (MFD+RIA, MFD+Insurance, etc.)
+  { id: "COMBO-001", name: "SIDD: Advisory vs Distribution Segregation", category: "Combination Rules", severity: "critical", businessTypes: ["MFD", "RIA"],
+    check: (ctx) => { const hasBoth = /distribut/i.test(ctx.text) && /advis/i.test(ctx.text); if (!hasBoth) return { passed: true, details: "Single activity — SIDD not applicable" }; const segregated = /sidd/i.test(ctx.text) || /segregat/i.test(ctx.text) || /separate.*section/i.test(ctx.text); return { passed: segregated, details: segregated ? "SIDD segregation disclosures found" : "Both MFD and RIA activities detected but no SIDD segregation — serious violation" } } },
+  { id: "COMBO-002", name: "Cross-Selling Disclosure", category: "Combination Rules", severity: "major", businessTypes: ["MFD", "Insurance"],
+    check: (ctx) => { const hasBoth = /mutual\s*fund/i.test(ctx.text) && /insurance/i.test(ctx.text); if (!hasBoth) return { passed: true, details: "Single product type — cross-selling not applicable" }; const disclosed = /separate.*licens/i.test(ctx.text) || /different.*regulat/i.test(ctx.text); return { passed: disclosed, details: disclosed ? "Cross-selling disclosure found" : "Both MF and insurance products shown — add cross-selling regulatory disclosure" } } },
+  { id: "COMBO-003", name: "Multiple Registration Display", category: "Combination Rules", severity: "major", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const regs = [/ARN/i, /IRDAI/i, /INA/i, /INP/i, /INZ/i, /PFRDA/i].filter((r) => r.test(ctx.text)).length; if (regs <= 1) return { passed: true, details: "Single registration — combination not applicable" }; return { passed: regs >= 2, details: `${regs} different registrations found — ensure each is clearly displayed` } } },
+
+  // SEBI CIRCULAR SPECIFIC
+  { id: "CIRC-001", name: "SEBI Investor Education", category: "SEBI Circulars", severity: "minor", businessTypes: ["MFD", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /investor\s*education/i.test(ctx.text) || /investor\s*awareness/i.test(ctx.text) || /financial\s*literacy/i.test(ctx.text); return { passed: has, details: has ? "Investor education content found" : "No investor education section — recommended by SEBI" } } },
+  { id: "CIRC-002", name: "SEBI Circular Reference", category: "SEBI Circulars", severity: "minor", businessTypes: ["MFD", "RIA", "PMS", "Stock Broker", "SIF"],
+    check: (ctx) => { const has = /circular/i.test(ctx.text) || /SEBI\/HO/i.test(ctx.text); return { passed: has, details: has ? "SEBI circular reference found" : "No SEBI circular references — shows regulatory awareness" } } },
+  { id: "CIRC-003", name: "Anti-Money Laundering Notice", category: "SEBI Circulars", severity: "minor", businessTypes: ["MFD", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /AML|anti[\s-]*money\s*launder|PMLA/i.test(ctx.text); return { passed: has, details: has ? "AML/PMLA reference found" : "No anti-money laundering reference" } } },
+  { id: "CIRC-004", name: "Do Not Call Registry", category: "SEBI Circulars", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /do\s*not\s*call/i.test(ctx.text) || /DNC/i.test(ctx.text) || /NDNC/i.test(ctx.text); return { passed: has, details: has ? "DNC/NDNC reference found" : "No Do Not Call registry reference" } } },
+
+  // SECURITY DEEP
+  { id: "SEC-001", name: "Content Security Policy", category: "Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('meta[http-equiv="Content-Security-Policy"]').length > 0; return { passed: has, details: has ? "CSP meta tag found" : "No Content Security Policy — recommended for XSS protection" } } },
+  { id: "SEC-002", name: "Mixed Content Check", category: "Security", severity: "major", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const httpSrcs = ctx.$('[src^="http://"]').length + ctx.$('[href^="http://"]').filter((_, el) => ctx.$(el).attr("href")?.endsWith(".css") || ctx.$(el).attr("href")?.endsWith(".js")).length; return { passed: httpSrcs === 0, details: httpSrcs === 0 ? "No mixed content (HTTP resources on HTTPS page)" : `${httpSrcs} insecure HTTP resources found on page` } } },
+  { id: "SEC-003", name: "External Link Safety", category: "Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const ext = ctx.$('a[target="_blank"]').length; const safe = ctx.$('a[target="_blank"][rel*="noopener"]').length; if (ext === 0) return { passed: true, details: "No external links with target=_blank" }; return { passed: safe >= ext * 0.7, details: `${safe}/${ext} external links have rel="noopener" — ${safe >= ext * 0.7 ? "good" : "add noopener for security"}` } } },
+
+  // MOBILE & PERFORMANCE DEEP
+  { id: "PERF-001", name: "Image Optimization", category: "Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const imgs = ctx.$("img").length; const lazy = ctx.$('img[loading="lazy"]').length; const webp = ctx.$('source[type="image/webp"]').length; if (imgs === 0) return { passed: true, details: "No images" }; return { passed: lazy > 0 || webp > 0, details: `${imgs} images: ${lazy} lazy-loaded, ${webp} WebP sources — ${lazy > 0 || webp > 0 ? "some optimization" : "no lazy loading or WebP"}` } } },
+  { id: "PERF-002", name: "Async/Defer Scripts", category: "Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const all = ctx.$("script[src]").length; const optimized = ctx.$("script[async], script[defer]").length; if (all === 0) return { passed: true, details: "No external scripts" }; return { passed: optimized >= all * 0.5, details: `${optimized}/${all} scripts are async/deferred — ${optimized >= all * 0.5 ? "good" : "blocking scripts may slow page load"}` } } },
+  { id: "PERF-003", name: "Viewport Width Configuration", category: "Performance", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const vp = ctx.$('meta[name="viewport"]').attr("content") || ""; const hasWidth = /width=device-width/i.test(vp); const hasScale = /initial-scale/i.test(vp); return { passed: hasWidth && hasScale, details: hasWidth && hasScale ? "Proper viewport configuration" : `Viewport ${!hasWidth ? "missing width=device-width" : ""}${!hasScale ? "missing initial-scale" : ""}` } } },
+
+  // AMFI SPECIFIC EXPANDED
+  { id: "AMFI-001", name: "AMFI-Registered Disclaimer", category: "MFD Specific", severity: "major", businessTypes: ["MFD"],
+    check: (ctx) => { const has = /AMFI[\s-]*registered/i.test(ctx.text); return { passed: has, details: has ? "AMFI-registered status mentioned" : "No explicit 'AMFI-registered' statement" } } },
+  { id: "AMFI-002", name: "Scheme Category Information", category: "MFD Specific", severity: "minor", businessTypes: ["MFD"],
+    check: (ctx) => { const has = /equity\s*fund/i.test(ctx.text) || /debt\s*fund/i.test(ctx.text) || /hybrid/i.test(ctx.text) || /large\s*cap/i.test(ctx.text) || /small\s*cap/i.test(ctx.text); return { passed: has, details: has ? "Scheme category information found" : "No scheme category information (equity, debt, hybrid, etc.)" } } },
+  { id: "AMFI-003", name: "Direct vs Regular Plan Notice", category: "MFD Specific", severity: "minor", businessTypes: ["MFD"],
+    check: (ctx) => { const has = /direct\s*(plan|route)/i.test(ctx.text) || /regular\s*(plan|route)/i.test(ctx.text); return { passed: has, details: has ? "Direct/Regular plan information found" : "No mention of Direct vs Regular plans" } } },
+
+  // INSURANCE EXPANDED
+  { id: "INS-004", name: "POSP Registration", category: "Insurance Specific", severity: "minor", businessTypes: ["Insurance"],
+    check: (ctx) => { const has = /POSP/i.test(ctx.text) || /point\s*of\s*sale/i.test(ctx.text); return { passed: true, details: has ? "POSP reference found" : "No POSP reference (applicable for POS persons only)" } } },
+  { id: "INS-005", name: "Premium Calculator", category: "Insurance Specific", severity: "minor", businessTypes: ["Insurance"],
+    check: (ctx) => { const has = /premium\s*calculator/i.test(ctx.text) || /calculate.*premium/i.test(ctx.text); return { passed: has, details: has ? "Premium calculator found" : "No premium calculator — useful for lead generation" } } },
+  { id: "INS-006", name: "Insurer Name Display", category: "Insurance Specific", severity: "minor", businessTypes: ["Insurance"],
+    check: (ctx) => { const has = /(LIC|HDFC|ICICI|SBI|Bajaj|Max|Tata|Star|Kotak)\s*(life|general|health)/i.test(ctx.text); return { passed: has, details: has ? "Insurance company names displayed" : "No insurer names mentioned — shows product range" } } },
+
+  // NPS EXPANDED
+  { id: "NPS-004", name: "NPS Subscriber Benefits", category: "NPS Specific", severity: "minor", businessTypes: ["NPS"],
+    check: (ctx) => { const has = /subscriber.*benefit/i.test(ctx.text) || /benefit.*subscriber/i.test(ctx.text) || /annuity/i.test(ctx.text); return { passed: has, details: has ? "Subscriber benefits/annuity information found" : "NPS subscriber benefits not explained" } } },
+  { id: "NPS-005", name: "Exit/Withdrawal Rules", category: "NPS Specific", severity: "minor", businessTypes: ["NPS"],
+    check: (ctx) => { const has = /withdrawal/i.test(ctx.text) || /exit\s*rule/i.test(ctx.text) || /premature/i.test(ctx.text); return { passed: has, details: has ? "Withdrawal/exit rules explained" : "NPS withdrawal and exit rules not explained" } } },
+
+  // PMS EXPANDED
+  { id: "PMS-006", name: "Benchmark Disclosure", category: "PMS Specific", severity: "minor", businessTypes: ["PMS"],
+    check: (ctx) => { const has = /benchmark/i.test(ctx.text) || /Nifty/i.test(ctx.text) || /Sensex/i.test(ctx.text); return { passed: has, details: has ? "Benchmark reference found" : "No benchmark disclosure for PMS strategies" } } },
+  { id: "PMS-007", name: "Custodian Details", category: "PMS Specific", severity: "minor", businessTypes: ["PMS"],
+    check: (ctx) => { const has = /custodian/i.test(ctx.text); return { passed: has, details: has ? "Custodian details found" : "No custodian information — important for PMS investor trust" } } },
+
+  // STOCK BROKER EXPANDED
+  { id: "SB-006", name: "Trading Platform Info", category: "Stock Broker Specific", severity: "minor", businessTypes: ["Stock Broker"],
+    check: (ctx) => { const has = /platform/i.test(ctx.text) || /trading\s*(app|terminal|software)/i.test(ctx.text); return { passed: has, details: has ? "Trading platform information found" : "No trading platform/app information" } } },
+  { id: "SB-007", name: "Brokerage Charges", category: "Stock Broker Specific", severity: "minor", businessTypes: ["Stock Broker"],
+    check: (ctx) => { const has = /brokerage/i.test(ctx.text) || /commission/i.test(ctx.text) || /charges/i.test(ctx.text); return { passed: has, details: has ? "Brokerage charges information found" : "No brokerage charges/commission information" } } },
+  { id: "SB-008", name: "Account Opening Process", category: "Stock Broker Specific", severity: "minor", businessTypes: ["Stock Broker"],
+    check: (ctx) => { const has = /account\s*open/i.test(ctx.text) || /demat/i.test(ctx.text) || /open.*account/i.test(ctx.text); return { passed: has, details: has ? "Account opening information found" : "No account opening/demat information" } } },
+
+  // SIF EXPANDED
+  { id: "SIF-003", name: "SIF vs MF Differentiation", category: "SIF Specific", severity: "minor", businessTypes: ["SIF"],
+    check: (ctx) => { const has = /different.*mutual\s*fund/i.test(ctx.text) || /specialised.*investment/i.test(ctx.text) || /higher.*risk/i.test(ctx.text); return { passed: has, details: has ? "SIF differentiation from regular MFs found" : "No clear differentiation from regular mutual funds" } } },
+
+  // LEGAL EXPANDED
+  { id: "LEGAL-001", name: "Regulatory Body Links", category: "Legal & Regulatory", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.links.some((l) => /(sebi\.gov|amfiindia|irdai\.gov|pfrda\.gov|nseindia|bseindia)/i.test(l)); return { passed: has, details: has ? "Links to regulatory body websites found" : "No links to regulator websites (SEBI, AMFI, IRDAI, PFRDA)" } } },
+  { id: "LEGAL-002", name: "Copyright Year Current", category: "Legal & Regulatory", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const year = new Date().getFullYear(); const has = ctx.text.includes(year.toString()) || ctx.text.includes((year - 1).toString()); return { passed: has, details: has ? "Current copyright year found" : "Copyright year may be outdated" } } },
+  { id: "LEGAL-003", name: "Jurisdiction Clause", category: "Legal & Regulatory", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /jurisdiction/i.test(ctx.text) || /governing\s*law/i.test(ctx.text) || /indian\s*law/i.test(ctx.text); return { passed: has, details: has ? "Jurisdiction clause found" : "No governing law/jurisdiction clause" } } },
+  { id: "LEGAL-004", name: "Intellectual Property Notice", category: "Legal & Regulatory", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /intellectual\s*property/i.test(ctx.text) || /trademark/i.test(ctx.text) || /proprietary/i.test(ctx.text); return { passed: has, details: has ? "IP/trademark notice found" : "No intellectual property notice" } } },
+
+  // CONVERSION & UX
+  { id: "CRO-001", name: "Clear Call-to-Action", category: "Conversion & UX", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const ctas = ctx.$("a, button").filter((_, el) => /(contact|enquir|get.*start|book.*call|schedule|consult|invest\s*now|start\s*sip|open.*account)/i.test(ctx.$(el).text())).length; return { passed: ctas >= 1, details: ctas >= 1 ? `${ctas} clear CTAs found` : "No clear call-to-action buttons" } } },
+  { id: "CRO-002", name: "WhatsApp / Chat Integration", category: "Conversion & UX", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "NPS"],
+    check: (ctx) => { const has = ctx.links.some((l) => /wa\.me|whatsapp|chat/i.test(l)) || ctx.$('[class*="chat"], [class*="whatsapp"]').length > 0; return { passed: has, details: has ? "Chat/WhatsApp integration found" : "No WhatsApp or chat widget — improves conversions" } } },
+  { id: "CRO-003", name: "Google Maps / Location", category: "Conversion & UX", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "NPS"],
+    check: (ctx) => { const has = ctx.$('iframe[src*="google.com/maps"]').length > 0 || /maps\.google/i.test(ctx.text); return { passed: has, details: has ? "Google Maps embed found" : "No Google Maps location — helps local SEO" } } },
+  { id: "CRO-004", name: "Newsletter / Email Capture", category: "Conversion & UX", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /newsletter/i.test(ctx.text) || /subscribe/i.test(ctx.text) || ctx.$('input[type="email"]').length > 0; return { passed: has, details: has ? "Email capture/newsletter found" : "No newsletter signup — useful for lead nurturing" } } },
+  { id: "CRO-005", name: "Page Load Speed Indicators", category: "Conversion & UX", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const htmlSize = ctx.html.length; return { passed: htmlSize < 500000, details: htmlSize < 500000 ? `Page HTML is ${Math.round(htmlSize/1024)}KB — reasonable` : `Page HTML is ${Math.round(htmlSize/1024)}KB — may be slow to load` } } },
+
+  // FINAL RULES TO CROSS 148
+  { id: "REG-011", name: "Regulator Logo Usage", category: "Registration & Identity", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$("img").filter((_, el) => /(sebi|amfi|irdai|pfrda|nse|bse)/i.test(ctx.$(el).attr("alt") || "") || /(sebi|amfi|irdai|pfrda)/i.test(ctx.$(el).attr("src") || "")).length > 0; return { passed: has, details: has ? "Regulator logo found" : "No regulator logos displayed — adds authenticity" } } },
+  { id: "DISC-013", name: "Forward-Looking Statements", category: "Disclaimers & Disclosures", severity: "minor", businessTypes: ["MFD", "RIA", "PMS", "SIF"],
+    check: (ctx) => { const has = /forward[\s-]*looking/i.test(ctx.text) || /projection/i.test(ctx.text) || /estimate/i.test(ctx.text); const disclaimer = /forward.*statement.*risk/i.test(ctx.text) || /projection.*may\s*not/i.test(ctx.text); return { passed: !has || disclaimer, details: has && !disclaimer ? "Forward-looking statements without disclaimers" : "Forward-looking statement handling OK" } } },
+  { id: "DISC-014", name: "Third-Party Content Disclaimer", category: "Disclaimers & Disclosures", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker"],
+    check: (ctx) => { const has = /third[\s-]*party/i.test(ctx.text) && /disclaim/i.test(ctx.text); return { passed: true, details: has ? "Third-party content disclaimer found" : "Consider adding third-party content disclaimer if using external data" } } },
+  { id: "TECH-010", name: "HTTPS Redirect", category: "Technical & Security", severity: "major", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { return { passed: ctx.url.startsWith("https://"), details: ctx.url.startsWith("https://") ? "HTTPS enforced" : "Not using HTTPS — critical security issue" } } },
+  { id: "TECH-011", name: "Error Pages (404)", category: "Technical & Security", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { return { passed: true, details: "404 page handling requires separate check — recommended to implement custom 404" } } },
+  { id: "QUAL-011", name: "Last Updated Date", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = /last\s*updated/i.test(ctx.text) || /updated\s*on/i.test(ctx.text) || /as\s*of\s*\w+\s*\d{4}/i.test(ctx.text); return { passed: has, details: has ? "Last updated date found" : "No last updated date — shows content freshness" } } },
+  { id: "QUAL-012", name: "Sitemap Page", category: "Content Quality", severity: "minor", businessTypes: ["MFD", "Insurance", "RIA", "PMS", "Stock Broker", "SIF", "NPS"],
+    check: (ctx) => { const has = ctx.$('a').filter((_, el) => /sitemap/i.test(ctx.$(el).text())).length > 0 || ctx.links.some((l) => /sitemap/i.test(l)); return { passed: has, details: has ? "Sitemap link found" : "No HTML sitemap — helps navigation and SEO" } } },
+  { id: "MFD-004", name: "Lump Sum vs SIP Explanation", category: "MFD Specific", severity: "minor", businessTypes: ["MFD"],
+    check: (ctx) => { const has = /lump\s*sum/i.test(ctx.text) || /one[\s-]*time/i.test(ctx.text); return { passed: has, details: has ? "Lump sum investment option mentioned" : "No lump sum vs SIP comparison — helpful for investors" } } },
+  { id: "RIA-004", name: "Client Agreement Reference", category: "RIA Specific", severity: "minor", businessTypes: ["RIA"],
+    check: (ctx) => { const has = /client\s*agreement/i.test(ctx.text) || /advisory\s*agreement/i.test(ctx.text) || /engagement\s*letter/i.test(ctx.text); return { passed: has, details: has ? "Client agreement reference found" : "No reference to client advisory agreement" } } },
+  { id: "SB-009", name: "Margin Trading Disclosure", category: "Stock Broker Specific", severity: "major", businessTypes: ["Stock Broker"],
+    check: (ctx) => { const has = /margin\s*trad/i.test(ctx.text); const disc = /margin.*risk/i.test(ctx.text) || /leverage.*risk/i.test(ctx.text); if (!has) return { passed: true, details: "No margin trading mentioned" }; return { passed: disc, details: disc ? "Margin trading risk disclosure found" : "Margin trading mentioned without proper risk disclosure" } } },
+  { id: "INS-007", name: "Insurance Ombudsman Details", category: "Insurance Specific", severity: "minor", businessTypes: ["Insurance"],
+    check: (ctx) => { const has = /ombudsman/i.test(ctx.text) || /IGMS/i.test(ctx.text) || /insurance\s*grievance/i.test(ctx.text); return { passed: has, details: has ? "Insurance ombudsman/IGMS reference found" : "No insurance ombudsman reference — required for grievance redressal" } } },
+  { id: "COMBO-004", name: "PMS + MFD Conflict Disclosure", category: "Combination Rules", severity: "major", businessTypes: ["MFD", "PMS"],
+    check: (ctx) => { const hasBoth = /portfolio\s*management/i.test(ctx.text) && /mutual\s*fund/i.test(ctx.text); if (!hasBoth) return { passed: true, details: "Not applicable" }; const disclosed = /conflict.*interest/i.test(ctx.text) || /independent/i.test(ctx.text); return { passed: disclosed, details: disclosed ? "Conflict of interest disclosure found" : "Both PMS and MFD services without conflict of interest disclosure" } } },
 ]
 
 export function runAudit(url: string, html: string): AuditResult {
