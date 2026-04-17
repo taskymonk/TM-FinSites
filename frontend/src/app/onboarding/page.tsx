@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -98,7 +98,7 @@ type WizardData = {
   design: { colorPreset: string; logoUrl: string; tagline: string; style: string }
 }
 
-export default function OnboardingPage() {
+function OnboardingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
@@ -556,4 +556,9 @@ export default function OnboardingPage() {
       <Footer />
     </div>
   )
+}
+
+
+export default function OnboardingPage() {
+  return <Suspense fallback={<div className="min-h-screen bg-[#030712]" />}><OnboardingPageContent /></Suspense>
 }

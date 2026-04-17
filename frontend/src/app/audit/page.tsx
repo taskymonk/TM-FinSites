@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -47,7 +47,7 @@ function SeverityBadge({ severity }: { severity: string }) {
   return <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${map[severity] || map.minor}`}>{severity}</Badge>
 }
 
-export default function AuditPage() {
+function AuditPageContent() {
   const searchParams = useSearchParams()
   const [url, setUrl] = useState(searchParams.get("url") || "")
   const [scanning, setScanning] = useState(false)
@@ -253,4 +253,9 @@ export default function AuditPage() {
       <Footer />
     </div>
   )
+}
+
+
+export default function AuditPage() {
+  return <Suspense fallback={<div className="min-h-screen bg-[#030712]" />}><AuditPageContent /></Suspense>
 }

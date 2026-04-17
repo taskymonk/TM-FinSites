@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -25,7 +25,7 @@ interface Plan {
   is_contact_us: boolean
 }
 
-export default function PlansPage() {
+function PlansPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [plans, setPlans] = useState<Plan[]>([])
@@ -169,4 +169,9 @@ export default function PlansPage() {
       <Footer />
     </div>
   )
+}
+
+
+export default function PlansPage() {
+  return <Suspense fallback={<div className="min-h-screen bg-[#030712]" />}><PlansPageContent /></Suspense>
 }
