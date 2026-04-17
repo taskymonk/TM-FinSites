@@ -1,7 +1,7 @@
 # FinSites Platform — PRD (V6)
 
 ## Architecture
-- Next.js 15 (App Router) + Supabase + OpenAI (via Emergent proxy)
+- Next.js 15 (App Router) + Supabase + OpenAI GPT-4o (via Emergent proxy)
 - Tailwind CSS v4, shadcn/ui, Framer Motion, jsPDF
 - 148-rule Compliance Engine (Cheerio + regex), 18 categories
 - Dark-only theme (#030712 bg, blue-600 accent)
@@ -9,26 +9,26 @@
 ## All Implemented Features (April 17, 2026)
 
 ### Public Pages
-- [x] Landing page (Hero, Stats, Features, 7 Business Types, How-It-Works, Pricing, FAQ)
+- [x] Landing page: Hero, Stats, Features, 7 clickable Business Type cards (linked to /solutions/*), How-It-Works, Pricing, FAQ
 - [x] 7 Solution Pages: `/solutions/mfd`, `/ria`, `/insurance`, `/pms`, `/stock-broker`, `/sif`, `/nps`
+- [x] Navbar: Solutions dropdown with all 7 types, scroll nav, mobile menu
+- [x] Footer: Solutions column, Product, Company, Legal
 - [x] Compliance Audit (`/audit`): 148 rules, 18 categories, editable types + rescan, PDF download, top-level filter buttons
-- [x] Plans (`/plans`): 3 Supabase-backed plans, enterprise dialog
-- [x] 5-Step Wizard (`/onboarding`): Types, registration, services, design, review + submit
-- [x] Resume Wizard (email lookup)
 - [x] Audit-to-Onboarding Prefill (detected types + URL auto-passed)
+- [x] Plans (`/plans`): 3 Supabase-backed plans, enterprise dialog
+- [x] 5-Step Wizard (`/onboarding`): Types, registration, services, design, review + resume wizard
 - [x] Confirmation page (`/confirmation/[ref]`)
 - [x] Setup page (`/setup`): Copy-able SQL schema
 
-### Admin Panel (`/admin/dashboard`)
-- [x] Left sidebar: Dashboard, Submissions, Audit History, Analytics
-- [x] Dashboard: Stats cards + recent submissions
-- [x] Submissions: Filter buttons, search, view/edit detail dialog, export Markdown, **Generate PRD (LLM)**, delete
+### Admin Panel
+- [x] `/admin` redirects to `/admin/login`
+- [x] Login: Single-click auth (cookie-based, hard redirect)
+- [x] Dashboard sidebar: Dashboard, Submissions, Audit History, Analytics
+- [x] Submissions: Filter buttons, search, view/edit detail, export Markdown, Generate PRD (LLM), delete
 - [x] Audit History: Search, individual delete, clear all
-- [x] Analytics: Submission status breakdown, business type distribution, audit score distribution, quick metrics
-
-### Compliance Engine (148 Rules, 18 Categories)
-Registration & Identity (11), Disclaimers & Disclosures (14), Contact & Grievance (7), Privacy & Legal (6), Technical & Security (11), Content Quality (12), Accessibility (5), SEO & Performance (6), Trust & Credibility (5), Content Depth (6), Combination Rules (4), SEBI Circulars (4), Security (3), Performance (3), Conversion & UX (5), Legal & Regulatory (4), MFD/Insurance/RIA/PMS/SIF/NPS/Stock Broker Specific (42 total)
+- [x] Analytics: Submission breakdown, business type distribution, audit scores, quick metrics
 
 ## Remaining Backlog
-- P2: Email notifications, multi-admin, client portal
-- P3: Multi-language, blog/content section
+- P2: Email notifications (submission received, status change, abandoned wizard)
+- P2: Multi-admin support (invite admins, role-based access)
+- P3: Client portal, multi-language, blog/content section

@@ -180,7 +180,7 @@ export default function LandingPage() {
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">Three Steps to Your Compliant Website</h2>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-8">
-            {[{ step: "01", title: "Audit Your Site", desc: "Enter your URL or start fresh. 78+ compliance checks detect your business type automatically.", icon: Scan },
+            {[{ step: "01", title: "Audit Your Site", desc: "Enter your URL or start fresh. 148 compliance checks detect your business type automatically.", icon: Scan },
               { step: "02", title: "Complete the Wizard", desc: "Guided data collection with smart validation. Prefilled data from audit. 7 business types supported.", icon: FileCheck },
               { step: "03", title: "Get Your Website", desc: "We build and deploy your fully compliant, modern portfolio website. Review, refine, launch.", icon: Globe }
             ].map((s, i) => (
