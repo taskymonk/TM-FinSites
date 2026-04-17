@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Scan, CheckCircle2, XCircle, AlertTriangle, Shield, Globe, ArrowRight, Loader2, Info, RefreshCw, Pencil } from "lucide-react"
+import { Scan, CheckCircle2, XCircle, AlertTriangle, Shield, Globe, ArrowRight, Loader2, RefreshCw, Pencil } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { runAudit as runAuditAction, runAuditWithTypes as runAuditWithTypesAction } from "@/lib/actions"
@@ -57,6 +56,7 @@ export default function AuditPage() {
   const [editingTypes, setEditingTypes] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [rescanning, setRescanning] = useState(false)
+  const [resultFilter, setResultFilter] = useState<"failed" | "passed" | "all">("failed")
 
   useEffect(() => {
     const urlParam = searchParams.get("url")
@@ -89,8 +89,12 @@ export default function AuditPage() {
     finally { setRescanning(false) }
   }
 
-  const failedResults = result?.results.filter((r) => !r.passed) || []
-  const passedResults = result?.results.filter((r) => r.passed) || []
+  const displayResults = result ? (resultFilter === "failed" ? result.results.filter((r) => !r.passed) : resultFilter === "passed" ? result.results.filter((r) => r.passed) : result.results) : []
+  const failedCount = result?.results.filter((r) => !r.passed).length || 0
+  const passedCount = result?.results.filter((r) => r.passed).length || 0
+
+  // Build prefill link for onboarding
+  const onboardingLink = result ? `/onboarding?audit=${result.audit_id}&types=${result.detected_business_types.join(",")}&url=${encodeURIComponent(result.url)}` : "/onboarding"
 
   return (
     <div className="min-h-screen bg-[#030712]" data-testid="audit-page">
@@ -128,6 +132,7 @@ export default function AuditPage() {
         <AnimatePresence>
           {result && (
             <motion.section initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16" data-testid="audit-results">
+              {/* Score + Summary */}
               <div className="grid md:grid-cols-3 gap-6 mb-8">
                 <Card className="md:col-span-1 bg-slate-900 border-slate-800" data-testid="audit-score-card">
                   <CardContent className="pt-6 text-center">
@@ -148,6 +153,7 @@ export default function AuditPage() {
                         </div>
                       ))}
                     </div>
+                    {/* Detected Types */}
                     <div className="pt-3 border-t border-slate-800" data-testid="detected-types-section">
                       <div className="flex items-center justify-between mb-2.5">
                         <span className="text-xs font-medium text-slate-300">Detected Business Types</span>
@@ -174,6 +180,7 @@ export default function AuditPage() {
                 </Card>
               </div>
 
+              {/* Category Breakdown */}
               <Card className="bg-slate-900 border-slate-800 mb-8" data-testid="audit-categories">
                 <CardHeader><CardTitle className="text-base text-white">Category Breakdown</CardTitle></CardHeader>
                 <CardContent>
@@ -192,38 +199,46 @@ export default function AuditPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-900 border-slate-800" data-testid="audit-details">
-                <CardHeader><CardTitle className="text-base text-white">Detailed Results</CardTitle></CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="failed">
-                    <TabsList className="mb-4" data-testid="audit-tabs">
-                      <TabsTrigger value="failed" className="gap-1.5 text-xs"><XCircle className="w-3.5 h-3.5" /> Failed ({failedResults.length})</TabsTrigger>
-                      <TabsTrigger value="passed" className="gap-1.5 text-xs"><CheckCircle2 className="w-3.5 h-3.5" /> Passed ({passedResults.length})</TabsTrigger>
-                      <TabsTrigger value="all" className="gap-1.5 text-xs"><Info className="w-3.5 h-3.5" /> All ({result.results.length})</TabsTrigger>
-                    </TabsList>
-                    {(["failed", "passed", "all"] as const).map((tab) => {
-                      const items = tab === "failed" ? failedResults : tab === "passed" ? passedResults : result.results
-                      return (
-                        <TabsContent key={tab} value={tab} className="space-y-2">
-                          {items.length === 0 ? <p className="text-sm text-slate-500 py-8 text-center">{tab === "failed" ? "No failures!" : "No results"}</p> :
-                          items.map((r, i) => (
-                            <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border ${r.passed ? "bg-emerald-500/5 border-emerald-500/10" : "bg-red-500/5 border-red-500/10"}`}>
-                              {r.passed ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap"><span className="text-sm font-medium text-white">{r.name}</span><SeverityBadge severity={r.severity} /><span className="text-[10px] text-slate-500 font-mono">{r.rule_id}</span></div>
-                                <p className="text-xs text-slate-400 mt-0.5">{r.details}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </TabsContent>
-                      )
-                    })}
-                  </Tabs>
-                </CardContent>
-              </Card>
+              {/* Detailed Results - Filter buttons ABOVE as standalone buttons */}
+              <div className="mb-8" data-testid="audit-details">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-bold text-white">Detailed Results</h3>
+                </div>
+                <div className="flex gap-2 mb-4" data-testid="audit-result-filters">
+                  {([
+                    { key: "failed" as const, label: "Failed", count: failedCount, icon: <XCircle className="w-3.5 h-3.5" /> },
+                    { key: "passed" as const, label: "Passed", count: passedCount, icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+                    { key: "all" as const, label: "All", count: result.results.length, icon: null },
+                  ]).map((f) => (
+                    <button key={f.key} onClick={() => setResultFilter(f.key)}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${resultFilter === f.key ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400 hover:text-white border border-slate-700"}`}
+                      data-testid={`filter-${f.key}`}>
+                      {f.icon} {f.label} ({f.count})
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  {displayResults.length === 0 ? <p className="text-sm text-slate-500 py-8 text-center bg-slate-900 rounded-xl border border-slate-800">{resultFilter === "failed" ? "No failures found!" : "No results"}</p> :
+                  displayResults.map((r, i) => (
+                    <div key={i} className={`flex items-start gap-3 p-4 rounded-xl border ${r.passed ? "bg-emerald-500/5 border-emerald-500/10" : "bg-red-500/5 border-red-500/10"}`}>
+                      {r.passed ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap"><span className="text-sm font-medium text-white">{r.name}</span><SeverityBadge severity={r.severity} /><span className="text-[10px] text-slate-500 font-mono">{r.rule_id}</span></div>
+                        <p className="text-xs text-slate-400 mt-0.5">{r.details}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* CTA - Prefilled onboarding link */}
               <div className="mt-8 text-center">
                 <p className="text-slate-400 mb-4">Ready to fix these compliance issues?</p>
-                <Link href="/plans"><Button size="lg" className="gap-2 font-semibold bg-blue-600 hover:bg-blue-500 text-white" data-testid="audit-get-started-btn">Build Your Compliant Site <ArrowRight className="w-4 h-4" /></Button></Link>
+                <Link href={onboardingLink}>
+                  <Button size="lg" className="gap-2 font-semibold bg-blue-600 hover:bg-blue-500 text-white" data-testid="audit-get-started-btn">
+                    Build Your Compliant Site <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
             </motion.section>
           )}

@@ -137,11 +137,18 @@ export default function OnboardingPage() {
       const planId = searchParams.get("plan") || undefined
       const auditId = searchParams.get("audit") || undefined
       const types = searchParams.get("types")?.split(",").filter(Boolean) || []
+      const auditUrl = searchParams.get("url") || ""
 
       const result = await createWizardSession({ planId, auditId, businessTypes: types })
       if ("sessionId" in result) {
         setSessionId(result.sessionId)
         if (types.length) setSelectedTypes(types)
+        if (auditUrl) {
+          setWizardData((prev) => ({
+            ...prev,
+            design: { ...prev.design, logoUrl: auditUrl },
+          }))
+        }
       }
       setLoading(false)
     }
@@ -268,8 +275,16 @@ export default function OnboardingPage() {
                     <p className="text-sm text-slate-400">Choose all that apply. We&apos;ll customize your website for each.</p>
                   </CardHeader>
                   <CardContent>
+                    {/* Audit Prefill Notice */}
+                    {searchParams.get("audit") && selectedTypes.length > 0 && !showResume && (
+                      <div className="mb-5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2" data-testid="prefill-banner">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <p className="text-xs text-emerald-300">Business types prefilled from your audit. {selectedTypes.length} type{selectedTypes.length > 1 ? "s" : ""} detected: <span className="font-medium text-white">{selectedTypes.join(", ")}</span></p>
+                      </div>
+                    )}
+
                     {/* Resume Banner */}
-                    {!showResume && step === 1 && (
+                    {!showResume && step === 1 && !searchParams.get("audit") && (
                       <div className="mb-5 p-3 rounded-xl bg-primary/5 border border-blue-500/20 flex items-center justify-between" data-testid="resume-banner">
                         <p className="text-xs text-slate-400">Already started? <span className="text-white font-medium">Resume where you left off.</span></p>
                         <Button variant="ghost" size="sm" className="h-7 text-xs text-blue-400 hover:text-blue-400" onClick={() => setShowResume(true)} data-testid="resume-open-btn">Resume Wizard</Button>
